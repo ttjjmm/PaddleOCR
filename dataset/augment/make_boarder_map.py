@@ -93,12 +93,12 @@ class MakeBorderMap(object):
             canvas[ymin_valid:ymax_valid + 1, xmin_valid:xmax_valid + 1])
 
     def _distance(self, xs, ys, point_1, point_2):
-        '''
+        """
         compute the distance from point to a line
         ys: coordinates in the first axis
         xs: coordinates in the second axis
         point_1, point_2: (x, y), the end of the line
-        '''
+        """
         height, width = xs.shape[:2]
         square_distance_1 = np.square(xs - point_1[0]) + np.square(ys - point_1[
             1])
