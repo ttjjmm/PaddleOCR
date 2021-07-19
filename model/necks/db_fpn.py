@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 
 class DBFPN(nn.Module):
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, out_channels, **kwargs):
         super(DBFPN, self).__init__()
         self.out_channels = out_channels
         # weight_attr = paddle.nn.initializer.KaimingUniform()

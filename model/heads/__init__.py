@@ -3,14 +3,12 @@
 __all__ = ['build_head']
 
 
-def build_head(cfg, htype):
-    name = cfg.pop('name')
-    if name == 'db_head':
-        from .db_head import DBHead
-        head = DBHead(**cfg)
+def build_head(config):
+    from .db_head import DBHead
+    name = config.pop('name')
+    module_class = DBHead(**config)
 
-
-    return head
+    return module_class
 
 
 

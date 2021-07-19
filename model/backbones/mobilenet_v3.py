@@ -3,8 +3,6 @@ The Implement of MobileNet-v3
 modified from PaddleOCR
 Cretaed by Jimmy Tao 2021-7-13
 """
-
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
