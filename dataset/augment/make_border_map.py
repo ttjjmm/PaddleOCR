@@ -23,7 +23,6 @@ class MakeBorderMap(object):
         self.thresh_max = thresh_max
 
     def __call__(self, data):
-
         img = data['image']
         text_polys = data['polys']
         ignore_tags = data['ignore_tags']
@@ -121,11 +120,8 @@ class MakeBorderMap(object):
         return result
 
     def extend_line(self, point_1, point_2, result, shrink_ratio):
-        ex_point_1 = (int(
-            round(point_1[0] + (point_1[0] - point_2[0]) * (1 + shrink_ratio))),
-                      int(
-                          round(point_1[1] + (point_1[1] - point_2[1]) * (
-                              1 + shrink_ratio))))
+        ex_point_1 = (int(round(point_1[0] + (point_1[0] - point_2[0]) * (1 + shrink_ratio))),
+                      int(round(point_1[1] + (point_1[1] - point_2[1]) * (1 + shrink_ratio))))
         cv2.line(
             result,
             tuple(ex_point_1),
@@ -134,11 +130,8 @@ class MakeBorderMap(object):
             1,
             lineType=cv2.LINE_AA,
             shift=0)
-        ex_point_2 = (int(
-            round(point_2[0] + (point_2[0] - point_1[0]) * (1 + shrink_ratio))),
-                      int(
-                          round(point_2[1] + (point_2[1] - point_1[1]) * (
-                              1 + shrink_ratio))))
+        ex_point_2 = (int(round(point_2[0] + (point_2[0] - point_1[0]) * (1 + shrink_ratio))),
+                      int(round(point_2[1] + (point_2[1] - point_1[1]) * (1 + shrink_ratio))))
         cv2.line(
             result,
             tuple(ex_point_2),

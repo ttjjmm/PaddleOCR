@@ -5,7 +5,9 @@ import numpy as np
 import yaml
 
 from model.arch import build_model
-
+from dataset import build_dataloader
+import logging
+logger = logging.getLogger(__name__)
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -25,6 +27,7 @@ def load_config(cfg_path):
     inp = torch.randn((1, 3, 320, 320))
     print(m(inp)['maps'].shape)
 
+    loader = build_dataloader(config, "Train", logger)
     return config
 
 

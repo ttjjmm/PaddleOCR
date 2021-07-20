@@ -2,6 +2,7 @@ import sys
 import six
 import cv2
 import numpy as np
+import torch
 
 
 class DecodeImage(object):
@@ -87,7 +88,7 @@ class KeepKeys(object):
     def __call__(self, data):
         data_list = []
         for key in self.keep_keys:
-            data_list.append(data[key])
+            data_list.append(torch.from_numpy(data[key]))
         return data_list
 
 

@@ -1,8 +1,8 @@
+import torch
+from torch.utils.data import Dataset
 import numpy as np
 import os
 import random
-from torch.utils.data import Dataset
-
 from dataset.augment import transform, create_operators
 
 
@@ -18,6 +18,7 @@ class SimpleDataSet(Dataset):
         loader_config = config[mode]['loader']
 
         self.delimiter = dataset_config.get('delimiter', '\t')
+
         label_file_list = dataset_config.pop('label_file_list')
         data_source_num = len(label_file_list)
         ratio_list = dataset_config.get("ratio_list", [1.0])
@@ -49,8 +50,7 @@ class SimpleDataSet(Dataset):
                 lines = f.readlines()
                 if self.mode == "train" or ratio_list[idx] < 1.0:
                     random.seed(self.seed)
-                    lines = random.sample(lines,
-                                          round(len(lines) * ratio_list[idx]))
+                    lines = random.sample(lines, round(len(lines) * ratio_list[idx]))
                 data_lines.extend(lines)
         return data_lines
 
@@ -83,6 +83,7 @@ class SimpleDataSet(Dataset):
             rnd_idx = np.random.randint(self.__len__(
             )) if self.mode == "train" else (idx + 1) % self.__len__()
             return self.__getitem__(rnd_idx)
+
         return outs
 
     def __len__(self):
@@ -96,4 +97,5 @@ if __name__ == '__main__':
     cfg = yaml.load(open('/home/tjm/Documents/python/pycharmProjects/PaddleOCR/config/ppocr_mb.yaml', 'rb'), Loader=yaml.Loader)
     print(cfg)
     ds = SimpleDataSet(cfg, 'Train', logger)
+    print(len(ds))
     print(ds[10])
