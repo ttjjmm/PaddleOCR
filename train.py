@@ -31,13 +31,6 @@ def load_config(cfg_path):
 
 
 
-
-
-
-
-
-
-
 if __name__ == '__main__':
     args = parse_args()
     print(load_config(args.config))
