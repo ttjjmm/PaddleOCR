@@ -25,13 +25,13 @@ def create_operators(op_param_list, global_config=None):
     create operators based on the config
 
     Args:
-        params(list): a dict list, used to create some operators
+        op_param_list(list): a dict list, used to create some operators
+        global_config:
     """
     assert isinstance(op_param_list, list), 'operator config should be a list'
     ops = []
     for operator in op_param_list:
         assert isinstance(operator, dict) and len(operator) == 1, "yaml format error"
-        print(operator)
         op_name = list(operator)[0]
         param = {} if operator[op_name] is None else operator[op_name]
         if global_config is not None:

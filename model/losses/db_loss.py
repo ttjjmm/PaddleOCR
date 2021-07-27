@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
-from basic_loss import DiceLoss, MaskL1Loss, BalanceLoss
+from .basic_loss import DiceLoss, MaskL1Loss, BalanceLoss
+
 
 class DBLoss(nn.Module):
     """
@@ -30,9 +31,16 @@ class DBLoss(nn.Module):
     def forward(self, predicts, labels):
         predict_maps = predicts['maps']
         label_threshold_map, label_threshold_mask, label_shrink_map, label_shrink_mask = labels[1:]
+
+        label_threshold_map = label_threshold_map.to('cuda:0')
+        label_threshold_mask = label_threshold_mask.to('cuda:0')
+        label_shrink_map = label_shrink_map.to('cuda:0')
+        label_shrink_mask = label_shrink_mask.to('cuda:0')
+
         shrink_maps = predict_maps[:, 0, :, :]
         threshold_maps = predict_maps[:, 1, :, :]
         binary_maps = predict_maps[:, 2, :, :]
+
 
         loss_shrink_maps = self.bce_loss(shrink_maps, label_shrink_map,
                                          label_shrink_mask)

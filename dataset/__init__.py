@@ -23,7 +23,8 @@ def build_dataloader(config, mode, logger, seed=None):
                         shuffle=shuffle,
                         num_workers=num_workers,
                         drop_last=drop_last,
-                        pin_memory=pin_memory)
+                        pin_memory=pin_memory,
+                        collate_fn=dataset.collate_fn)
 
     return loader
 

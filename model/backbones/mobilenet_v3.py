@@ -73,12 +73,10 @@ class MobileNetV3(nn.Module):
             ]
             cls_ch_squeeze = 576
         else:
-            raise NotImplementedError("mode[" + model_name +
-                                      "_model] is not implemented!")
+            raise NotImplementedError("mode[" + model_name + "_model] is not implemented!")
 
         supported_scale = [0.35, 0.5, 0.75, 1.0, 1.25]
-        assert scale in supported_scale, \
-            "supported scale are {} but input scale is {}".format(supported_scale, scale)
+        assert scale in supported_scale, "supported scale are {} but input scale is {}".format(supported_scale, scale)
         inplanes = 16
         # conv1
         self.conv = ConvBNLayer(
@@ -125,12 +123,17 @@ class MobileNetV3(nn.Module):
                 if_act=True,
                 act='hardswish'))
         self.stages.append(nn.Sequential(*block_list))
+
+        stage_names = ['stage{}'.format(i + 1) for i in range(len(self.stages))]
+        for name, seq in zip(stage_names, self.stages):
+            setattr(self, name, nn.Sequential(*seq))
         self.out_channels.append(make_divisible(scale * cls_ch_squeeze))
 
     def forward(self, x):
         x = self.conv(x)
         out_list = []
-        for stage in self.stages:
+        for i in range(len(self.stages)):
+            stage = getattr(self, 'stage{}'.format(i + 1))
             x = stage(x)
             out_list.append(x)
         return out_list
@@ -159,7 +162,6 @@ class ConvBNLayer(nn.Module):
                               groups=groups,
                               bias=False)
         self.bn = nn.BatchNorm2d(out_channels)
-
 
     def forward(self, x):
         x = self.conv(x)
@@ -264,6 +266,8 @@ class SeModule(nn.Module):
 
 if __name__ == '__main__':
     mbv3 = MobileNetV3()
+    print(mbv3)
+
     inp = torch.randn((2, 3, 320, 320))
     for i in mbv3(inp):
         print(i.shape)

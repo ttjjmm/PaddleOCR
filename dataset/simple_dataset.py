@@ -4,7 +4,7 @@ import numpy as np
 import os
 import random
 from dataset.augment import transform, create_operators
-
+from icecream import ic
 
 class SimpleDataSet(Dataset):
     def __init__(self, config, mode, logger, seed=None):
@@ -25,9 +25,8 @@ class SimpleDataSet(Dataset):
         if isinstance(ratio_list, (float, int)):
             ratio_list = [float(ratio_list)] * int(data_source_num)
 
-        assert len(
-            ratio_list
-        ) == data_source_num, "The length of ratio_list should be the same as the file_list."
+        assert len(ratio_list) == data_source_num, "The length of ratio_list should be the same as the file_list."
+
         self.data_dir = dataset_config['data_dir']
         self.do_shuffle = loader_config['shuffle']
 
@@ -38,7 +37,7 @@ class SimpleDataSet(Dataset):
         self.data_idx_order_list = list(range(len(self.data_lines)))
         if self.mode == "train" and self.do_shuffle:
             self.shuffle_data_random()
-        print(global_config)
+
         self.ops = create_operators(dataset_config['transforms'], global_config)
 
     def get_image_info_list(self, file_list, ratio_list):
@@ -67,21 +66,23 @@ class SimpleDataSet(Dataset):
             substr = data_line.strip("\n").split(self.delimiter)
             file_name = substr[0]
             label = substr[1]
+            # print(label, len(label))
             img_path = os.path.join(self.data_dir, file_name)
             data = {'img_path': img_path, 'label': label}
             if not os.path.exists(img_path):
                 raise Exception("{} does not exist!".format(img_path))
+            # print(data['img_path'])
             with open(data['img_path'], 'rb') as f:
                 img = f.read()
                 data['image'] = img
             outs = transform(data, self.ops)
+            # print(outs['image'].shape)
         except Exception as e:
             self.logger.error("When parsing line {}, error happened with msg: {}".format(data_line, e))
             outs = None
         if outs is None:
             # during evaluation, we should fix the idx to get same results for many times of evaluation.
-            rnd_idx = np.random.randint(self.__len__(
-            )) if self.mode == "train" else (idx + 1) % self.__len__()
+            rnd_idx = np.random.randint(self.__len__()) if self.mode == "train" else (idx + 1) % self.__len__()
             return self.__getitem__(rnd_idx)
 
         return outs
@@ -89,13 +90,46 @@ class SimpleDataSet(Dataset):
     def __len__(self):
         return len(self.data_idx_order_list)
 
+    @staticmethod
+    def collate_fn(batch):
+        data_list = []
+        data = []
+        for idx, each in enumerate(batch):
+            for idx2, item in enumerate(each):
+                if idx == 0:
+                    data_list.append([item])
+                else:
+                    data_list[idx2].append(item)
+        for each in data_list:
+            data.append(torch.stack(each, dim=0))
+        return data
+
 
 if __name__ == '__main__':
     import logging
+    import matplotlib.pyplot as plt
     logger = logging.getLogger(__name__)
     import yaml
     cfg = yaml.load(open('/home/tjm/Documents/python/pycharmProjects/PaddleOCR/config/ppocr_mb.yaml', 'rb'), Loader=yaml.Loader)
     print(cfg)
     ds = SimpleDataSet(cfg, 'Train', logger)
     print(len(ds))
-    print(ds[10])
+    z = ds[10]
+    print(z[1].shape)
+    for i in z:
+        print(i.shape)
+    img = np.expand_dims(z[1].numpy(), axis=-1)
+    plt.imshow(img)
+    plt.show()
+
+
+
+
+
+
+
+
+
+
+
+

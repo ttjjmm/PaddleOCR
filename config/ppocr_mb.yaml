@@ -41,15 +41,14 @@ Loss:
 
 Optimizer:
   name: Adam
-  beta1: 0.9
-  beta2: 0.999
-  lr:
-    name: Cosine
-    learning_rate: 0.001
-    warmup_epoch: 2
-  regularizer:
-    name: 'L2'
-    factor: 0
+  betas: [0.9, 0.99]
+  lr:  0.001
+#    name: Cosine
+#    learning_rate: 0.001
+#    warmup_epoch: 2
+#  regularizer:
+#    name: 'L2'
+#    factor: 0
 
 Train:
   dataset:
@@ -91,5 +90,5 @@ Train:
     shuffle: True
     pin_memory: True
     drop_last: False
-    batch_size: 8
-    num_workers: 4
+    batch_size: 16
+    num_workers: 6

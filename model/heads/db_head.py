@@ -52,11 +52,9 @@ class DBHead(nn.Module):
         return torch.reciprocal(1 + torch.exp(-self.k * (x - y)))
 
     def forward(self, x):
-        print(x.shape)
         shrink_maps = self.binarize(x)
         if not self.training:
             return {'maps': shrink_maps}
-
         threshold_maps = self.thresh(x)
         binary_maps = self.step_function(shrink_maps, threshold_maps)
         y = torch.cat([shrink_maps, threshold_maps, binary_maps], dim=1)

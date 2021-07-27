@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-
+from icecream import ic
 
 class BalanceLoss(nn.Module):
     def __init__(self,
@@ -11,15 +11,15 @@ class BalanceLoss(nn.Module):
                  eps=1e-6,
                  **kwargs):
         """
-               The BalanceLoss for Differentiable Binarization text detection
-               args:
-                   balance_loss (bool): whether balance loss or not, default is True
-                   main_loss_type (str): can only be one of ['CrossEntropy','DiceLoss',
-                       'Euclidean','BCELoss', 'MaskL1Loss'], default is  'DiceLoss'.
-                   negative_ratio (int|float): float, default is 3.
-                   return_origin (bool): whether return unbalanced loss or not, default is False.
-                   eps (float): default is 1e-6.
-               """
+        The BalanceLoss for Differentiable Binarization text detection
+        args:
+            balance_loss (bool): whether balance loss or not, default is True
+            main_loss_type (str): can only be one of ['CrossEntropy','DiceLoss',
+               'Euclidean','BCELoss', 'MaskL1Loss'], default is  'DiceLoss'.
+            negative_ratio (int|float): float, default is 3.
+            return_origin (bool): whether return unbalanced loss or not, default is False.
+            eps (float): default is 1e-6.
+       """
         super(BalanceLoss, self).__init__()
         self.balance_loss = balance_loss
         self.main_loss_type = main_loss_type
@@ -64,8 +64,7 @@ class BalanceLoss(nn.Module):
         negative = (1 - gt) * mask
 
         positive_count = int(positive.sum())
-        negative_count = int(
-            min(negative.sum(), positive_count * self.negative_ratio))
+        negative_count = int(min(negative.sum(), positive_count * self.negative_ratio))
         loss = self.loss(pred, gt, mask=mask)
 
         if not self.balance_loss:
@@ -75,7 +74,8 @@ class BalanceLoss(nn.Module):
         negative_loss = negative * loss
         negative_loss = torch.reshape(negative_loss, shape=[-1])
         if negative_count > 0:
-            sort_loss = negative_loss.sort(descending=True)
+            sort_loss, _ = negative_loss.sort(descending=True)
+            # ic(sort_loss.shape)
             negative_loss = sort_loss[:negative_count]
             # negative_loss, _ = paddle.topk(negative_loss, k=negative_count_int)
             balance_loss = (positive_loss.sum() + negative_loss.sum()) / (
@@ -85,7 +85,6 @@ class BalanceLoss(nn.Module):
         if self.return_origin:
             return balance_loss, loss
         return balance_loss
-
 
 
 class DiceLoss(nn.Module):
@@ -122,3 +121,13 @@ class MaskL1Loss(nn.Module):
         loss = (torch.abs(pred - gt) * mask).sum() / (mask.sum() + self.eps)
         loss = torch.mean(loss)
         return loss
+
+
+# if __name__ == '__main__':
+#
+#     a = torch.randn((4, 320, 320))
+#     b = torch.randn((4, 320, 320))
+#     c = torch.randn((4, 320, 320))
+#     loss = BalanceLoss()
+#
+#     print(loss(a, b , c))
