@@ -47,7 +47,6 @@ def main():
     model = model.to('cuda:0')
 
 
-
     for batch in tqdm(train_dataloader):
         imgs = batch[0].to('cuda:0')
         preds = model(imgs)

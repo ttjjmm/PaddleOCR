@@ -6,33 +6,36 @@ import torch.nn.functional as F
 class SubHead(nn.Module):
     def __init__(self, in_channels):
         super(SubHead, self).__init__()
-        self.convs = nn.Sequential(
-            nn.Conv2d(
+
+        self.conv1 =  nn.Conv2d(
                 in_channels=in_channels,
                 out_channels=in_channels // 4,
                 kernel_size=(3, 3),
                 padding=(1, 1),
-                bias=False),
-            nn.BatchNorm2d(in_channels // 4),
-            nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(
+                bias=False)
+        self.conv_bn1 = nn.BatchNorm2d(in_channels // 4)
+
+        self.conv2 = nn.ConvTranspose2d(
                 in_channels=in_channels // 4,
                 out_channels=in_channels // 4,
                 kernel_size=(2, 2),
                 stride=(2, 2),
-                bias=False),
-            nn.BatchNorm2d(in_channels // 4),
-            nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(
+                bias=False)
+        self.conv_bn2 = nn.BatchNorm2d(in_channels // 4)
+
+        self.conv3 =  nn.ConvTranspose2d(
                 in_channels=in_channels // 4,
                 out_channels=1,
                 kernel_size=(2, 2),
-                stride=(2, 2)),
-            nn.Sigmoid()
-        )
+                stride=(2, 2))
 
     def forward(self, x):
-        return self.convs(x)
+        x = self.conv_bn1(self.conv1(x))
+        x = F.relu(x, inplace=True)
+        x = self.conv_bn2(self.conv2(x))
+        x = F.relu(x, inplace=True)
+        x = F.sigmoid(self.conv3(x))
+        return x
 
 
 class DBHead(nn.Module):

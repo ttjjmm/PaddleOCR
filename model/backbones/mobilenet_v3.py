@@ -124,7 +124,7 @@ class MobileNetV3(nn.Module):
                 act='hardswish'))
         self.stages.append(nn.Sequential(*block_list))
 
-        stage_names = ['stage{}'.format(i + 1) for i in range(len(self.stages))]
+        stage_names = ['stage{}'.format(i) for i in range(len(self.stages))]
         for name, seq in zip(stage_names, self.stages):
             setattr(self, name, nn.Sequential(*seq))
         self.out_channels.append(make_divisible(scale * cls_ch_squeeze))
@@ -133,7 +133,7 @@ class MobileNetV3(nn.Module):
         x = self.conv(x)
         out_list = []
         for i in range(len(self.stages)):
-            stage = getattr(self, 'stage{}'.format(i + 1))
+            stage = getattr(self, 'stage{}'.format(i))
             x = stage(x)
             out_list.append(x)
         return out_list
@@ -266,7 +266,11 @@ class SeModule(nn.Module):
 
 if __name__ == '__main__':
     mbv3 = MobileNetV3()
-    print(mbv3)
+    for k, v in mbv3.state_dict().items():
+        print(k, v.shape)
+    exit(11)
+
+    # print(mbv3)
 
     inp = torch.randn((2, 3, 320, 320))
     for i in mbv3(inp):
