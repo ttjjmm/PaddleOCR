@@ -53,11 +53,12 @@ class DBFPN(nn.Module):
             kernel_size=(3, 3),
             padding=(1, 1),
             bias=False)
-
+        self._init_weights()
 
     def _init_weights(self):
-        pass
-
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight.data)
 
     def forward(self, x):
         c2, c3, c4, c5 = x

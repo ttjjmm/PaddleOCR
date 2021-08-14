@@ -9,7 +9,6 @@ class DBPostProcess(object):
     """
     The post process for Differentiable Binarization (DB).
     """
-
     def __init__(self,
                  thresh=0.3,
                  box_thresh=0.7,
@@ -24,18 +23,16 @@ class DBPostProcess(object):
         self.unclip_ratio = unclip_ratio
         self.min_size = 3
         self.score_mode = score_mode
-        assert score_mode in [
-            "slow", "fast"
-        ], "Score mode must be in [slow, fast] but got: {}".format(score_mode)
+        assert score_mode in ["slow", "fast"], "Score mode must be in [slow, fast] but got: {}".format(score_mode)
 
         self.dilation_kernel = None if not use_dilation else np.array(
             [[1, 1], [1, 1]])
 
     def boxes_from_bitmap(self, pred, _bitmap, dest_width, dest_height):
-        '''
+        """
         _bitmap: single map with shape (1, H, W),
                 whose values are binarized as {0, 1}
-        '''
+        """
 
         bitmap = _bitmap
         height, width = bitmap.shape
@@ -90,7 +87,6 @@ class DBPostProcess(object):
     def get_mini_boxes(self, contour):
         bounding_box = cv2.minAreaRect(contour)
         points = sorted(list(cv2.boxPoints(bounding_box)), key=lambda x: x[0])
-
         index_1, index_2, index_3, index_4 = 0, 1, 2, 3
         if points[1][1] > points[0][1]:
             index_1 = 0
@@ -111,9 +107,9 @@ class DBPostProcess(object):
         return box, min(bounding_box[1])
 
     def box_score_fast(self, bitmap, _box):
-        '''
+        """
         box_score_fast: use bbox mean score as the mean score
-        '''
+        """
         h, w = bitmap.shape[:2]
         box = _box.copy()
         xmin = np.clip(np.floor(box[:, 0].min()).astype(np.int), 0, w - 1)
@@ -128,9 +124,9 @@ class DBPostProcess(object):
         return cv2.mean(bitmap[ymin:ymax + 1, xmin:xmax + 1], mask)[0]
 
     def box_score_slow(self, bitmap, contour):
-        '''
+        """
         box_score_slow: use polyon mean score as the mean score
-        '''
+        """
         h, w = bitmap.shape[:2]
         contour = contour.copy()
         contour = np.reshape(contour, (-1, 2))
@@ -164,8 +160,7 @@ class DBPostProcess(object):
                     self.dilation_kernel)
             else:
                 mask = segmentation[batch_index]
-            boxes, scores = self.boxes_from_bitmap(pred[batch_index], mask,
-                                                   src_w, src_h)
+            boxes, scores = self.boxes_from_bitmap(pred[batch_index], mask, src_w, src_h)
 
             boxes_batch.append({'points': boxes})
         return boxes_batch
