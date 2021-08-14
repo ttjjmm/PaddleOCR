@@ -5,7 +5,7 @@ from collections import OrderedDict
 
 if __name__ == '__main__':
 
-    ckpt = torch.load('/home/tjm/Documents/python/pycharmProjects/PaddleOCR/weights/ch_ppocr_mobile_v2.0_det_train.pt')
+    ckpt = torch.load('/home/tjm/Documents/python/pycharmProjects/PaddleOCR/weights/ch_ppocr_mobile_v2.0_det_train.pth')
     # for idx, (k, v) in enumerate(ckpt.items()):
     #     print(idx, k, v.shape)
     # exit(11)
@@ -29,5 +29,5 @@ if __name__ == '__main__':
             new_key = k
         new_stat[k] = ckpt[new_key]
         print(idx, new_key, v.shape)
-    model.load_state_dict(new_stat)
+    model.load_state_dict(new_stat, strict=True)
     torch.save(new_stat, './ch_ppocr_mobile_v2.0_det_train.pth')
