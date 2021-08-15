@@ -1,3 +1,3 @@
 # PaddleOCR
-ReImplement PaddleOCR code in PyTorch
+ReImplement PaddleOCR code in PyTorch，
 Coding Now....
