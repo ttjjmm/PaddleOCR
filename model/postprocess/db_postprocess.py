@@ -25,20 +25,18 @@ class DBPostProcess(object):
         self.score_mode = score_mode
         assert score_mode in ["slow", "fast"], "Score mode must be in [slow, fast] but got: {}".format(score_mode)
 
-        self.dilation_kernel = None if not use_dilation else np.array(
-            [[1, 1], [1, 1]])
+        self.dilation_kernel = None if not use_dilation else np.array([[1, 1], [1, 1]])
 
     def boxes_from_bitmap(self, pred, _bitmap, dest_width, dest_height):
         """
         _bitmap: single map with shape (1, H, W),
                 whose values are binarized as {0, 1}
         """
-
         bitmap = _bitmap
         height, width = bitmap.shape
 
-        outs = cv2.findContours((bitmap * 255).astype(np.uint8), cv2.RETR_LIST,
-                                cv2.CHAIN_APPROX_SIMPLE)
+        outs = cv2.findContours((bitmap * 255).astype(np.uint8), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+
         if len(outs) == 3:
             img, contours, _ = outs[0], outs[1], outs[2]
         elif len(outs) == 2:
@@ -101,9 +99,8 @@ class DBPostProcess(object):
             index_2 = 3
             index_3 = 2
 
-        box = [
-            points[index_1], points[index_2], points[index_3], points[index_4]
-        ]
+        box = [points[index_1], points[index_2], points[index_3], points[index_4]]
+
         return box, min(bounding_box[1])
 
     def box_score_fast(self, bitmap, _box):

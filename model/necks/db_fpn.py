@@ -68,9 +68,9 @@ class DBFPN(nn.Module):
         in3 = self.in3_conv(c3)
         in2 = self.in2_conv(c2)
         # defult nearest
-        out4 = in4 + F.interpolate(in5, scale_factor=2)  # 1/16
-        out3 = in3 + F.interpolate(out4, scale_factor=2)  # 1/8
-        out2 = in2 + F.interpolate(out3, scale_factor=2)  # 1/4
+        out4 = in4 + F.interpolate(in5, mode="nearest", scale_factor=2)  # 1/16
+        out3 = in3 + F.interpolate(out4, mode="nearest", scale_factor=2)  # 1/8
+        out2 = in2 + F.interpolate(out3, mode="nearest", scale_factor=2)  # 1/4
 
         p5 = self.p5_conv(in5)
         p4 = self.p4_conv(out4)
@@ -86,7 +86,7 @@ class DBFPN(nn.Module):
 
 
 if __name__ == '__main__':
-    from model.backbones.mobilenet_v3 import MobileNetV3
+    from model.backbones.det_mbnetv3 import MobileNetV3
     net1 = MobileNetV3()
     net2 = DBFPN([16, 24, 56, 480], 96)
     inp = torch.randn((2, 3, 320, 320))

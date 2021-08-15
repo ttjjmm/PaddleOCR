@@ -110,7 +110,7 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     logger = logging.getLogger(__name__)
     import yaml
-    cfg = yaml.load(open('/home/tjm/Documents/python/pycharmProjects/PaddleOCR/config/ppocr_mb.yaml', 'rb'), Loader=yaml.Loader)
+    cfg = yaml.load(open('/config/ppocr_det.yaml', 'rb'), Loader=yaml.Loader)
     print(cfg)
     ds = SimpleDataSet(cfg, 'Train', logger)
     print(len(ds))

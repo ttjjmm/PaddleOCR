@@ -11,8 +11,8 @@ class Im2Seq(nn.Module):
     def forward(x):
         B, C, H, W = x.shape
         assert H == 1
-        x = x.squeeze(axis=2)
-        x = x.transpose([0, 2, 1])  # (NTC)(batch, width, channels)
+        x = x.reshape(B, C, H * W)
+        x = x.permute((0, 2, 1))  # (NTC)(batch, width, channels)
         return x
 
 
@@ -23,8 +23,9 @@ class EncoderWithRNN(nn.Module):
         self.lstm = nn.LSTM(
             in_channels,
             hidden_size,
+            bidirectional=True,
             num_layers=2,
-            bidirectional=True)
+            batch_first=True)
 
     def forward(self, x):
         x, _ = self.lstm(x)
@@ -54,14 +55,13 @@ class SequenceEncoder(nn.Module):
         else:
             support_encoder_dict = {
                 'reshape': Im2Seq,
-                'fc': EncoderWithFC,
+                # 'fc': EncoderWithFC,
                 'rnn': EncoderWithRNN
             }
             assert encoder_type in support_encoder_dict, '{} must in {}'.format(
                 encoder_type, support_encoder_dict.keys())
 
-            self.encoder = support_encoder_dict[encoder_type](
-                self.encoder_reshape.out_channels, hidden_size)
+            self.encoder = support_encoder_dict[encoder_type](self.encoder_reshape.out_channels, hidden_size)
             self.out_channels = self.encoder.out_channels
             self.only_reshape = False
 

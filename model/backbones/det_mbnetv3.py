@@ -1,6 +1,6 @@
 """
 The Implement of MobileNet-v3
-modified from PaddleOCR
+Modified from PaddleOCR
 Cretaed by Jimmy Tao 2021-7-13
 """
 import torch
@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-__all__ = ['MobileNetV3']
+__all__ = ['MobileNetV3', 'make_divisible', 'ResidualUnit', 'ConvBNLayer']
 
 
 def make_divisible(v, divisor=8, min_value=None):
@@ -125,6 +125,7 @@ class MobileNetV3(nn.Module):
         self.stages.append(nn.Sequential(*block_list))
 
         stage_names = ['stage{}'.format(i) for i in range(len(self.stages))]
+
         for name, seq in zip(stage_names, self.stages):
             setattr(self, name, nn.Sequential(*seq))
         self.out_channels.append(make_divisible(scale * cls_ch_squeeze))
@@ -245,6 +246,18 @@ class hsigmoid(nn.Module):
         return out
 
 
+class HardSigmid(nn.Module):
+    def __init__(self, inplace=True):
+        super(HardSigmid, self).__init__()
+        self.inplece = inplace
+
+    def forward(self, x):
+        if self.inplece:
+            return (1.2 * x).add_(3.).clamp_(0., 6.).div_(6.)
+        else:
+            return F.relu6(1.2 * x + 3.) / 6.
+
+
 class SeModule(nn.Module):
     def __init__(self, in_size, reduction=4):
         super(SeModule, self).__init__()
@@ -255,13 +268,11 @@ class SeModule(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(in_size // reduction, in_size, kernel_size=(1, 1), stride=(1, 1), padding=(0, 0), bias=False),
             nn.BatchNorm2d(in_size),
-            hsigmoid()
+            HardSigmid()
         )
 
     def forward(self, x):
         return x * self.se(x)
-
-
 
 
 if __name__ == '__main__':

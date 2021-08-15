@@ -19,8 +19,8 @@ class SubHead(nn.Module):
                 in_channels=in_channels // 4,
                 out_channels=in_channels // 4,
                 kernel_size=(2, 2),
-                stride=(2, 2),
-                bias=False)
+                stride=(2, 2))
+
         self.conv_bn2 = nn.BatchNorm2d(in_channels // 4)
 
         self.conv3 =  nn.ConvTranspose2d(
@@ -34,7 +34,7 @@ class SubHead(nn.Module):
         x = F.relu(x, inplace=True)
         x = self.conv_bn2(self.conv2(x))
         x = F.relu(x, inplace=True)
-        x = F.sigmoid(self.conv3(x))
+        x = torch.sigmoid(self.conv3(x))
         return x
 
 

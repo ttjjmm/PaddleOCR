@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, default='/home/tjm/Documents/python/pycharmProjects/PaddleOCR/config/ppocr_mb.yaml',
+    parser.add_argument('--config', type=str, default='/home/tjm/Documents/python/pycharmProjects/PaddleOCR/config/ppocr_det.yaml',
                         help='train config file path')
     parser.add_argument('--local_rank', default=-1, type=int,
                         help='node rank for distributed training')
