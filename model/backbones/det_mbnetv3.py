@@ -210,7 +210,7 @@ class ResidualUnit(nn.Module):
             act=act)
 
         if self.if_se:
-            self.se = SeModule(mid_channels)
+            self.mid_se = SeModule(mid_channels)
 
         self.linear_conv = ConvBNLayer(
             in_channels=mid_channels,
@@ -261,18 +261,33 @@ class HardSigmid(nn.Module):
 class SeModule(nn.Module):
     def __init__(self, in_size, reduction=4):
         super(SeModule, self).__init__()
-        self.se = nn.Sequential(
-            nn.AdaptiveAvgPool2d(1),
-            nn.Conv2d(in_size, in_size // reduction, kernel_size=(1, 1), stride=(1, 1), padding=(0, 0), bias=False),
-            nn.BatchNorm2d(in_size // reduction),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(in_size // reduction, in_size, kernel_size=(1, 1), stride=(1, 1), padding=(0, 0), bias=False),
-            nn.BatchNorm2d(in_size),
-            HardSigmid()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.conv1 = nn.Conv2d(
+            in_size, in_size // reduction, kernel_size=(1, 1), stride=(1, 1), padding=(0, 0), bias=False
         )
+        self.conv2 = nn.Conv2d(
+            in_size // reduction, in_size, kernel_size=(1, 1), stride=(1, 1), padding=(0, 0), bias=False
+        )
+        self.hard_sigmod = HardSigmid(inplace=True)
+
+        # self.se = nn.Sequential(
+        #     nn.AdaptiveAvgPool2d(1),
+        #     nn.Conv2d(in_size, in_size // reduction, kernel_size=(1, 1), stride=(1, 1), padding=(0, 0), bias=False),
+        #     nn.BatchNorm2d(in_size // reduction),
+        #     nn.ReLU(inplace=True),
+        #     nn.Conv2d(in_size // reduction, in_size, kernel_size=(1, 1), stride=(1, 1), padding=(0, 0), bias=False),
+        #     nn.BatchNorm2d(in_size),
+        #     HardSigmid()
+        # )
 
     def forward(self, x):
-        return x * self.se(x)
+        inputs = x
+        x = self.avg_pool(x)
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = self.conv2(x)
+        x = self.hard_sigmod(x)
+        return x * inputs
 
 
 if __name__ == '__main__':
