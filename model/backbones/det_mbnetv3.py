@@ -263,10 +263,19 @@ class SeModule(nn.Module):
         super(SeModule, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.conv1 = nn.Conv2d(
-            in_size, in_size // reduction, kernel_size=(1, 1), stride=(1, 1), padding=(0, 0), bias=False
+            in_size, in_size // reduction,
+            kernel_size=(1, 1),
+            stride=(1, 1),
+            padding=(0, 0),
+            bias=True
         )
         self.conv2 = nn.Conv2d(
-            in_size // reduction, in_size, kernel_size=(1, 1), stride=(1, 1), padding=(0, 0), bias=False
+            in_size // reduction,
+            in_size,
+            kernel_size=(1, 1),
+            stride=(1, 1),
+            padding=(0, 0),
+            bias=True
         )
         self.hard_sigmod = HardSigmid(inplace=True)
 
