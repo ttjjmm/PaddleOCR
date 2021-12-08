@@ -119,6 +119,21 @@ class MobileNetV3(nn.Module):
 
 
 if __name__ == '__main__':
+
+    state = torch.load('/home/ubuntu/Documents/pycharm/PaddleOCR/weights/ch_ppocr_mobile_v2.0_cls_train.pth')
+
+
+
+    for k, v in state.items():
+        print(k, v.shape)
+    exit(1)
+    t = list()
+
     m = MobileNetV3(scale=0.35)
     for k, v in m.state_dict().items():
+        k_ls = k.split('.')
+        if k_ls[-1] == 'num_batches_tracked':
+            continue
         print(k, v.shape)
+        t.append(k)
+    print(len(t), len(state))

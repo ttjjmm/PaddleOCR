@@ -13,6 +13,7 @@ Global:
   save_inference_dir:
   use_visualdl: False
   infer_img: doc/imgs_words_en/word_10.png
+  device: cuda:0
   label_list: ['0','180']
 
 Architecture:

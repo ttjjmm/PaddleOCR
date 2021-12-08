@@ -5,8 +5,10 @@ __all__ = ['build_head']
 
 def build_head(config):
     from .db_head import DBHead
-    name = config.pop('name')
-    module_class = DBHead(**config)
+    from .cls_head import ClsHead
+    module_name = config.pop('name')
+
+    module_class = eval(module_name)(**config)
 
     return module_class
 
