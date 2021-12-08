@@ -24,7 +24,7 @@ class ClsHead(nn.Module):
 
     def forward(self, x):
         x = self.pool(x)
-        x = paddle.reshape(x, shape=[x.shape[0], x.shape[1]])
+        x = torch.reshape(x, shape=[x.shape[0], x.shape[1]])
         x = self.fc(x)
         if not self.training:
             x = F.softmax(x, dim=1)

@@ -1,6 +1,6 @@
 import os
 import logging
-import torch
+
 import numpy as np
 import time
 from termcolor import colored
