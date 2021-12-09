@@ -12,7 +12,7 @@ def ocr_converter(yaml_path, src_weight, dst_weight=None):
         cfg = yaml.load(open(yaml_path, 'rb'), Loader=yaml.Loader)
         model = build_model(cfg['Architecture'])
         model.eval()
-        exit(1)
+        # exit(1)
         new_state_dict = OrderedDict()
 
         # weights_path = '/home/ubuntu/Documents/pycharm/PaddleOCR/weights/ch_ppocr_mobile_v2.0_det_train/best_accuracy.pdparams'
@@ -27,6 +27,8 @@ def ocr_converter(yaml_path, src_weight, dst_weight=None):
             elif k.endswith('running_var'):
                 ppname = k.replace('running_var', '_variance')
             elif k.endswith('weight') or k.endswith('bias'):
+                ppname = k
+            elif 'lstm' in k:
                 ppname = k
             else:
                 print('Redundance: {}'.format(k))
@@ -57,4 +59,4 @@ def ocr_converter(yaml_path, src_weight, dst_weight=None):
 
 if __name__ == '__main__':
     ocr_converter('/home/ubuntu/Documents/pycharm/PaddleOCR/config/ppocr_rec.yaml',
-                  '/home/ubuntu/Documents/pycharm/PaddleOCR/weights/ch_ppocr_mobile_v2.0_det_train/best_accuracy.pdparams')
+                  '/home/ubuntu/Documents/pycharm/PaddleOCR/weights/ch_ppocr_mobile_v2.0_rec_pre/best_accuracy.pdparams')

@@ -46,7 +46,7 @@ class EncoderWithRNN(nn.Module):
     def __init__(self, in_channels, hidden_size):
         super(EncoderWithRNN, self).__init__()
         self.out_channels = hidden_size * 2
-        self.rnn1 = nn.LSTM(
+        self.lstm = nn.LSTM(
             in_channels,
             hidden_size,
             bidirectional=True,
@@ -54,7 +54,7 @@ class EncoderWithRNN(nn.Module):
             batch_first=True)
 
     def forward(self, x):
-        x, _ = self.rnn1(x)
+        x, _ = self.lstm(x)
         return x
 
 
