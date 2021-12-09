@@ -14,7 +14,7 @@ Global:
   use_visualdl: False
   infer_img: doc/imgs_words_en/word_10.png
   device: cuda:0
-
+  image_shape: [3, 48, 192]
 
 Architecture:
   model_type: cls

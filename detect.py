@@ -5,7 +5,7 @@ import numpy as np
 
 from model.arch import build_model
 from model.postprocess import build_postprocess
-
+from dataset.augment.operators import ClsResizeImg
 
 import matplotlib.pyplot as plt
 from torchvision import transforms
@@ -24,6 +24,13 @@ class BaseDetector(object):
         post_cfg = cfg['PostProcess']
         self.postprocess = build_postprocess(post_cfg)
 
+        self.transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225])
+        ])
+
+
     def inference(self, path):
         pass
 
@@ -31,11 +38,11 @@ class BaseDetector(object):
 class OCRTextDetctor(BaseDetector):
     def __init__(self, cfg):
         super(OCRTextDetctor, self).__init__(cfg)
-        self.transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                 std=[0.229, 0.224, 0.225])
-        ])
+        # self.transform = transforms.Compose([
+        #     transforms.ToTensor(),
+        #     transforms.Normalize(mean=[0.485, 0.456, 0.406],
+        #                          std=[0.229, 0.224, 0.225])
+        # ])
 
 
     def inference(self, path):
@@ -58,7 +65,6 @@ class OCRTextDetctor(BaseDetector):
         plt.imshow(map)
         plt.show()
 
-
         shape_list = np.expand_dims(shape_list, 0)
         det_bboxes = self.postprocess(pred, shape_list)
         points = det_bboxes[0]['points']
@@ -73,29 +79,34 @@ class OCRTextDetctor(BaseDetector):
 class OCRTextClassifier(BaseDetector):
     def __init__(self, cfg):
         super(OCRTextClassifier, self).__init__(cfg)
-        self.transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                 std=[0.229, 0.224, 0.225])
-        ])
-
-    def test(self):
-        inp = torch.randn((1, 3, 48, 192)).cuda()
-        print(self.model(inp).shape)
+        self.img_shape = cfg['Global']['image_shape']
+        self.resize_fn = ClsResizeImg(self.img_shape)
 
     def inference(self, path):
-        pass
+        img = cv2.imread(path)
+        img = self.resize_fn({'image': img})
+        img['image'] = np.transpose(img['image'], (1, 2, 0))
+        image = self.transform(img['image']).unsqueeze(0)
+        image = image.to(self.device)
+        with torch.no_grad():
+            pred = self.model(image)
+
+        label_idx = torch.argmax(pred, dim=-1).cpu().item()
+        print(label_idx)
 
 
-
+class OCRTextRecognizer(BaseDetector):
+    def __init__(self, cfg):
+        super(OCRTextRecognizer, self).__init__(cfg)
+        print(self.model)
 
 
 
 if __name__ == '__main__':
-    file_path = './config/ppocr_cls.yaml'
+    file_path = './config/ppocr_rec.yaml'
     cfgs = yaml.load(open(file_path, 'rb'), Loader=yaml.Loader)
-    d = OCRTextClassifier(cfgs)
-    d.test()
+    d = OCRTextRecognizer(cfgs)
+    # d.inference('/home/ubuntu/Documents/pycharm/PaddleOCR/samples/word_201.png')
     # d.inference('/home/ubuntu/Documents/pycharm/PaddleOCR/samples/1.jpg')
 
 

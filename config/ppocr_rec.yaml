@@ -9,7 +9,7 @@ Global:
   eval_batch_step: [0, 2000]
   cal_metric_during_train: True
   pretrained_model:
-  checkpoints:
+  checkpoints: ./weights/ch_ppocr_mobile_v2.0_rec_pre.pt
   save_inference_dir:
   use_visualdl: False
   infer_img: doc/imgs_words/ch/word_1.jpg
@@ -20,7 +20,7 @@ Global:
   infer_mode: False
   use_space_char: True
   save_res_path: ./output/rec/predicts_chinese_lite_v2.0.txt
-
+  device: cuda:0
 
 Optimizer:
   name: Adam
