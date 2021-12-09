@@ -6,8 +6,8 @@ class ClsPostProcess(object):
         self.label_list = label_list
 
     def __call__(self, preds, label=None,  **kwargs):
-        # if isinstance(preds, torch.tensor):
-        preds = preds.cpu().numpy()
+        if isinstance(preds, torch.Tensor):
+            preds = preds.cpu().numpy()
         pred_idxs = preds.argmax(axis=1)
         decod_out = [
             (self.label_list[idx], preds[i, idx]) for i, idx in enumerate(pred_idxs)
@@ -19,7 +19,7 @@ class ClsPostProcess(object):
 
 
 
-
+print(__file__)
 
 
 

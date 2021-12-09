@@ -2,8 +2,11 @@ import torch
 import yaml
 import cv2
 import numpy as np
+
 from model.arch import build_model
-from model.postprocess.db_postprocess import DBPostProcess
+from model.postprocess import DBPostProcess, ClsPostProcess
+
+
 import matplotlib.pyplot as plt
 from torchvision import transforms
 
@@ -18,10 +21,12 @@ class BaseDetector(object):
         print('loaded pretrained model from path: {}'.format(cfg['Global']['checkpoints']))
         self.model = model.to(self.device).eval()
 
+        post_cfg = cfg['PostProcess']
+        post_name = post_cfg.pop('name')
+        self.postprocess = eval(post_name)(**post_cfg)
+
     def inference(self, path):
         pass
-
-
 
 
 class OCRTextDetctor(BaseDetector):
@@ -32,10 +37,6 @@ class OCRTextDetctor(BaseDetector):
             transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
         ])
-
-        post_cfg = cfg['PostProcess']
-        post_cfg.pop('name')
-        self.postprocess = DBPostProcess(**post_cfg)
 
 
     def inference(self, path):
@@ -84,10 +85,10 @@ class OCRTextClassifier(BaseDetector):
 
 
 if __name__ == '__main__':
-    file_path = './config/ppocr_cls.yaml'
+    file_path = './config/ppocr_det.yaml'
     cfgs = yaml.load(open(file_path, 'rb'), Loader=yaml.Loader)
-    d = OCRTextClassifier(cfgs)
-    # d.inference('/home/ubuntu/Documents/pycharm/PaddleOCR/samples/1.jpg')
+    d = OCRTextDetctor(cfgs)
+    d.inference('/home/ubuntu/Documents/pycharm/PaddleOCR/samples/1.jpg')
 
 
 
