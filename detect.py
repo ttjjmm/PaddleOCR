@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 from model.arch import build_model
-from model.postprocess import DBPostProcess, ClsPostProcess
+from model.postprocess import build_postprocess
 
 
 import matplotlib.pyplot as plt
@@ -22,8 +22,7 @@ class BaseDetector(object):
         self.model = model.to(self.device).eval()
 
         post_cfg = cfg['PostProcess']
-        post_name = post_cfg.pop('name')
-        self.postprocess = eval(post_name)(**post_cfg)
+        self.postprocess = build_postprocess(post_cfg)
 
     def inference(self, path):
         pass
@@ -85,9 +84,9 @@ class OCRTextClassifier(BaseDetector):
 
 
 if __name__ == '__main__':
-    file_path = './config/ppocr_det.yaml'
+    file_path = './config/ppocr_cls.yaml'
     cfgs = yaml.load(open(file_path, 'rb'), Loader=yaml.Loader)
-    d = OCRTextDetctor(cfgs)
+    d = OCRTextClassifier(cfgs)
     d.inference('/home/ubuntu/Documents/pycharm/PaddleOCR/samples/1.jpg')
 
 
