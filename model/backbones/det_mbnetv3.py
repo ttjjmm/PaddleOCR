@@ -158,7 +158,7 @@ class ConvBNLayer(nn.Module):
         self.conv = nn.Conv2d(in_channels=in_channels,
                               out_channels=out_channels,
                               kernel_size=(kernel_size, kernel_size),
-                              stride=(stride, stride),
+                              stride=stride,
                               padding=(padding, padding),
                               groups=groups,
                               bias=False)
@@ -225,7 +225,7 @@ class ResidualUnit(nn.Module):
         out = self.expand_conv(x)
         out = self.bottleneck_conv(out)
         if self.if_se:
-            out = self.se(out)
+            out = self.mid_se(out)
         out = self.linear_conv(out)
         if self.if_shortcut:
             out = x + out

@@ -73,7 +73,15 @@ class OCRTextDetctor(BaseDetector):
 class OCRTextClassifier(BaseDetector):
     def __init__(self, cfg):
         super(OCRTextClassifier, self).__init__(cfg)
-        print(self.model)
+        self.transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225])
+        ])
+
+    def test(self):
+        inp = torch.randn((1, 3, 48, 192)).cuda()
+        print(self.model(inp).shape)
 
     def inference(self, path):
         pass
@@ -87,7 +95,8 @@ if __name__ == '__main__':
     file_path = './config/ppocr_cls.yaml'
     cfgs = yaml.load(open(file_path, 'rb'), Loader=yaml.Loader)
     d = OCRTextClassifier(cfgs)
-    d.inference('/home/ubuntu/Documents/pycharm/PaddleOCR/samples/1.jpg')
+    d.test()
+    # d.inference('/home/ubuntu/Documents/pycharm/PaddleOCR/samples/1.jpg')
 
 
 
