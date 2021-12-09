@@ -9,7 +9,7 @@ Global:
   eval_batch_step: [0, 1000]
   cal_metric_during_train: True
   pretrained_model:
-  checkpoints:
+  checkpoints: ./weights/ch_ppocr_mobile_v2.0_cls_train.pt
   save_inference_dir:
   use_visualdl: False
   infer_img: doc/imgs_words_en/word_10.png
