@@ -55,6 +55,7 @@ Loss:
 
 PostProcess:
   name: CTCLabelDecode
+  character_dict_path: ./utils/ppocr_keys_v1.txt
 
 Metric:
   name: RecMetric

@@ -17,7 +17,7 @@ class BaseDetector(object):
         self.device = cfg['Global']['device']
         ckpt = torch.load(cfg['Global']['checkpoints'], map_location=lambda storage, loc: storage)
         model = build_model(cfg['Architecture'])
-        model.load_state_dict(ckpt)
+        model.load_state_dict(ckpt, strict=True)
         print('loaded pretrained model from path: {}'.format(cfg['Global']['checkpoints']))
         self.model = model.to(self.device).eval()
 

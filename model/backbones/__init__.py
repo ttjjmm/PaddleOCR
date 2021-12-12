@@ -11,5 +11,5 @@ def build_backbone(config, model_type):
         from .rec_mbnetv3 import MobileNetV3
     else:
         raise NotImplementedError
-    model = MobileNetV3(**config)
+    model = eval(name)(**config)
     return model

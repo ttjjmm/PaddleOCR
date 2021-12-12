@@ -8,6 +8,7 @@ def build_postprocess(config, global_config=None):
 
     from .db_postprocess import DBPostProcess
     from .cls_postprocess import ClsPostProcess
+    from .rec_postprocess import CTCLabelDecode
     # TODO rec preprocess
 
     config = copy.deepcopy(config)
