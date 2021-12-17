@@ -98,7 +98,19 @@ class OCRTextClassifier(BaseDetector):
 class OCRTextRecognizer(BaseDetector):
     def __init__(self, cfg):
         super(OCRTextRecognizer, self).__init__(cfg)
-        print(self.model)
+        # print(self.model)
+
+    def inference(self, path):
+        img = cv2.imread(path)
+        img = np.transpose(cv2.resize(img, (320, 32)), (0, 1, 2))
+        # img = np.expand_dims(img, axis=0)
+        img = self.transform(img).unsqueeze(0).to(self.device)
+        # print(img.shape)
+        # inp = torch.randn((1, 3, 32, 320)).to(self.device)
+        with torch.no_grad():
+            pred = self.model(img)
+        pred = pred.cpu().numpy()
+        print(self.postprocess(pred))
 
 
 
@@ -106,7 +118,7 @@ if __name__ == '__main__':
     file_path = './config/ppocr_rec.yaml'
     cfgs = yaml.load(open(file_path, 'rb'), Loader=yaml.Loader)
     d = OCRTextRecognizer(cfgs)
-    # d.inference('/home/ubuntu/Documents/pycharm/PaddleOCR/samples/word_201.png')
+    d.inference('/home/ubuntu/Documents/pycharm/PaddleOCR/samples/word_1.png')
     # d.inference('/home/ubuntu/Documents/pycharm/PaddleOCR/samples/1.jpg')
 
 

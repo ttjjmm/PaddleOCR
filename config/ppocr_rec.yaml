@@ -20,7 +20,8 @@ Global:
   infer_mode: False
   use_space_char: True
   save_res_path: ./output/rec/predicts_chinese_lite_v2.0.txt
-  device: cuda:0
+  device: cpu
+  image_shape: [3, 32, 320]
 
 Optimizer:
   name: Adam
