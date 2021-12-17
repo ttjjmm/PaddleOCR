@@ -80,7 +80,8 @@ class BaseRecLabelDecode(object):
             result_list.append((text, np.mean(conf_list)))
         return result_list
 
-    def get_ignored_tokens(self):
+    @staticmethod
+    def get_ignored_tokens():
         return [0]  # for ctc blank
 
 
