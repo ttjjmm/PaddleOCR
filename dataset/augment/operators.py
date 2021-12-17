@@ -5,9 +5,10 @@ import numpy as np
 import torch
 import math
 
+
+
 class DecodeImage(object):
     """ decode image """
-
     def __init__(self, img_mode='RGB', channel_first=False, **kwargs):
         self.img_mode = img_mode
         self.channel_first = channel_first
@@ -40,7 +41,6 @@ class DecodeImage(object):
 class NormalizeImage(object):
     """ normalize image such as substract mean, divide std
     """
-
     def __init__(self, scale=None, mean=None, std=None, order='chw', **kwargs):
         if isinstance(scale, str):
             scale = eval(scale)
@@ -232,7 +232,6 @@ class DetResizeForTest(object):
         img = cv2.resize(img, (int(resize_w), int(resize_h)))
         ratio_h = resize_h / float(h)
         ratio_w = resize_w / float(w)
-
         return img, [ratio_h, ratio_w]
 
 
@@ -255,8 +254,8 @@ class E2EResizeForTest(object):
         data['shape'] = np.array([src_h, src_w, ratio_h, ratio_w])
         return data
 
-    def resize_image_for_totaltext(self, im, max_side_len=512):
-
+    @staticmethod
+    def resize_image_for_totaltext(im, max_side_len=512):
         h, w, _ = im.shape
         resize_w = w
         resize_h = h
@@ -274,7 +273,8 @@ class E2EResizeForTest(object):
         ratio_w = resize_w / float(w)
         return im, (ratio_h, ratio_w)
 
-    def resize_image(self, im, max_side_len=512):
+    @staticmethod
+    def resize_image(im, max_side_len=512):
         """
         resize image to a size multiple of max_stride which is required by the network
         :param im: the resized image
