@@ -160,5 +160,5 @@ class DBPostProcess(object):
                 mask = segmentation[batch_index]
             boxes, scores = self.boxes_from_bitmap(pred[batch_index], mask, src_w, src_h)
 
-            boxes_batch.append({'points': boxes})
+            boxes_batch.append({'points': boxes, 'scores': scores})
         return boxes_batch

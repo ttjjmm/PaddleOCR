@@ -31,8 +31,17 @@ class BaseDetector(object):
         ])
 
 
-    def inference(self, path):
+    def preprocess(self, img: np.array) -> np.array:
         pass
+
+
+    def inference(self, path: str):
+        pass
+
+
+    def draw_results(self):
+        pass
+
 
 
 class OCRTextDetctor(BaseDetector):
@@ -67,10 +76,11 @@ class OCRTextDetctor(BaseDetector):
 
         shape_list = np.expand_dims(shape_list, 0)
         det_bboxes = self.postprocess(pred, shape_list)
+        print(det_bboxes)
         points = det_bboxes[0]['points']
         points = np.reshape(points, (points.shape[0], -1))[:, [0, 1, 4, 5]]
         for dets in points:
-            cv2.rectangle(raw_image, (dets[0], dets[1]), (dets[2], dets[3]), (255, 0, 0), cv2.LINE_4)
+            cv2.rectangle(raw_image, (dets[0], dets[1]), (dets[2], dets[3]), (255, 0, 0), 2, cv2.LINE_4)
         plt.imshow(raw_image)
         plt.show()
 
@@ -100,6 +110,9 @@ class OCRTextRecognizer(BaseDetector):
         super(OCRTextRecognizer, self).__init__(cfg)
         # print(self.model)
 
+
+
+
     def inference(self, path):
         img = cv2.imread(path)
         img = np.transpose(cv2.resize(img, (320, 32)), (0, 1, 2))
@@ -114,12 +127,21 @@ class OCRTextRecognizer(BaseDetector):
 
 
 
+class PaddleOCR(object):
+    def __init__(self):
+        super(PaddleOCR, self).__init__()
+
+
+    def detect(self, path):
+        pass
+
+
+
 if __name__ == '__main__':
     file_path = './config/ppocr_rec.yaml'
     cfgs = yaml.load(open(file_path, 'rb'), Loader=yaml.Loader)
     d = OCRTextRecognizer(cfgs)
     d.inference('/home/ubuntu/Documents/pycharm/PaddleOCR/samples/word_1.png')
-    # d.inference('/home/ubuntu/Documents/pycharm/PaddleOCR/samples/1.jpg')
 
 
 

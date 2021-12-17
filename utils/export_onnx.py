@@ -12,7 +12,7 @@ ROOT = FILE.parents[1]
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cfg', type=str, default=ROOT / 'config/ppocr_cls.yaml', help='configuration file path')
+    parser.add_argument('--cfg', type=str, default=ROOT / 'config/ppocr_det.yaml', help='configuration file path')
     parser.add_argument('--save_path', type=str, default=ROOT / 'onnx', help='onnx file save fold path')
     parser.add_argument('--simplify', action='store_true', default=True, help='onnx model simplify')
     opt = parser.parse_args()
