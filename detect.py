@@ -140,8 +140,8 @@ class PaddleOCR(object):
 if __name__ == '__main__':
     file_path = './config/ppocr_rec.yaml'
     cfgs = yaml.load(open(file_path, 'rb'), Loader=yaml.Loader)
-    d = OCRTextRecognizer(cfgs)
-    d.inference('./samples/word_1.png')
+    # d = OCRTextRecognizer(cfgs)
+    # d.inference('./samples/word_1.png')
 
 
 
