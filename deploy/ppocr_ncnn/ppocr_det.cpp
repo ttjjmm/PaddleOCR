@@ -127,7 +127,7 @@ cv::Mat OCRTextDet::detector(const cv::Mat& image) {
 
 
 float box_score_fast(cv::Mat bitmap, cv::Mat box){
-    
+
 }
 
 
