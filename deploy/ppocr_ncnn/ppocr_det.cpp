@@ -159,7 +159,9 @@ std::vector<cv::Point2f> get_min_box(const std::vector<cv::Point>& points){
 //    for(auto i = s.begin(); i != s.end(); ++i){
 //        std::cout << i->x  << " x " << i->y << std::endl;
 //    }
-
+    double min, max;
+    cv::minMaxLoc(boxPts.col(0), &min, &max);
+    std::cout << min << " x " << max << std::endl;
     return s;
 }
 
