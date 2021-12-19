@@ -72,9 +72,10 @@ class DBHead(nn.Module):
                 m.weight.data.fill_(1.)
                 m.bias.data.fill_(1e-4)
 
-
 if __name__ == '__main__':
     m = DBHead(32)
-
-
+    m.eval()
+    print(m)
+    inp = torch.randn((1, 32, 320, 320))
+    print(m(inp)['maps'].shape)
 

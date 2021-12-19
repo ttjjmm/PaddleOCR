@@ -8,7 +8,7 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include "net.h"
-#include "layer.h"
+//#include "layer.h"
 
 
 typedef struct BoxInfo{
@@ -27,7 +27,7 @@ public:
     OCRTextDet(const char* param, const char* bin);
     ~OCRTextDet();
     ncnn::Net* net{};
-    std::vector<BoxInfo> detector(const cv::Mat& image);
+    cv::Mat detector(const cv::Mat& image);
 //    friend void display(CenterDet *cdt);
 
 private:

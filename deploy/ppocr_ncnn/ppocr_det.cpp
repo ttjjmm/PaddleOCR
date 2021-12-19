@@ -3,7 +3,7 @@
 //
 
 #include "ppocr_det.h"
-
+#include "benchmark.h"
 
 OCRTextDet::OCRTextDet(const char *param, const char *bin) {
     this->net = new ncnn::Net();
@@ -88,3 +88,37 @@ cv::Mat OCRTextDet::resize(const cv::Mat& image, const cv::Size_<int>& outsize) 
     else std::cout << "Error Occor!" << std::endl;
     return dst;
 }
+
+
+cv::Mat OCRTextDet::detector(const cv::Mat& image) {
+    ncnn::Mat input, preds_map;
+
+    cv::Mat dst;
+
+    dst = preprocess(image, input, false, true);
+    std::cout << "xxx:" << input.h << 'x' << input.w << std::endl;
+    double start = ncnn::get_current_time();
+
+    auto ex = this->net->create_extractor();
+//    ex.set_light_mode(true);
+    ex.set_num_threads(4);
+
+    ex.input("input.1", input);
+    ex.extract("preds", preds_map);
+
+//    this->decode(heatmap, reg_box, dets, 0.4, 0.6);
+
+    double end = ncnn::get_current_time();
+//    std::cout <<  "Inference cost time: " << end - start << std::endl;
+    printf("Cost Time:%7.2f\n", end - start);
+    cv::Mat thresh_map(preds_map.w, preds_map.h, CV_32FC1);
+    memcpy(thresh_map.data, preds_map.data, preds_map.h * preds_map.w * sizeof(float));
+
+    std::cout << preds_map.w << "x" << preds_map.h << "x" << preds_map.c << std::endl;
+//    CenterDet::draw_bboxes(dst, dets);
+    return thresh_map;
+}
+
+
+
+
