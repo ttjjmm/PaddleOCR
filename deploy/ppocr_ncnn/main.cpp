@@ -15,6 +15,6 @@ int main() {
     det.detector(img);
     cv::imshow("res", img);
     cv::waitKey(0);
-    
+
     return 0;
 }
