@@ -37,16 +37,14 @@ private:
 //    static void draw_bboxes(const cv::Mat& image, const std::vector<BoxInfo>& bboxes);
     static cv::Mat resize(const cv::Mat& image, const cv::Size_<int>& outsize);
 //    static void nms(std::vector<BoxInfo>& bboxes, float nms_thr);
+    void postprocess(const cv::Mat& src);
 
-
-    cv::Size_<int> in_size = cv::Size(416, 416);
-    const float mean_vals[3] = {0.f, 0.f, 0.f};
-    const float norm_vals[3] = {1/255.f, 1/255.f, 1/255.f};
-//    const float mean_vals[3] = {103.53f, 116.28f, 123.675f};
-//    const float norm_vals[3] = {0.017429f, 0.017507f, 0.017125f};
-    int stride = 4;
-    int cls_num = 80;
-    static char class_names[80];
+    cv::Size_<int> in_size = cv::Size(640, 640);
+//    const float mean_vals[3] = {0.f, 0.f, 0.f};
+//    const float norm_vals[3] = {1/255.f, 1/255.f, 1/225.f};
+    const float mean_vals[3] = {103.94f, 116.78f, 123.68f};
+    const float norm_vals[3] = {0.017f, 0.017f, 0.017f};
+    float thresh = 0.3;
 };
 
 

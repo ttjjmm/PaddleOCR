@@ -57,12 +57,12 @@ class OCRTextDetctor(BaseDetector):
     def inference(self, path):
         raw_image = cv2.imread(path)
         src_h, src_w, _ = raw_image.shape
-        ratio_h  = float(1024) / src_h
+        ratio_h  = float(480) / src_h
         ratio_w = float(480) / src_w
 
         shape_list = np.array([src_h, src_w, ratio_h, ratio_w])
 
-        image = cv2.resize(raw_image, (480, 1024))
+        image = cv2.resize(raw_image, (480, 480))
         image = self.transform(image).unsqueeze(0)
 
         image = image.to(self.device)
@@ -70,13 +70,14 @@ class OCRTextDetctor(BaseDetector):
             pred = self.model(image)
 
         map = pred['maps'].cpu().squeeze(0).squeeze(0).numpy()
+
         print(map.shape, map.max(), map.min())
         plt.imshow(map)
         plt.show()
 
         shape_list = np.expand_dims(shape_list, 0)
         det_bboxes = self.postprocess(pred, shape_list)
-        print(det_bboxes)
+        # print(det_bboxes)
         points = det_bboxes[0]['points']
         points = np.reshape(points, (points.shape[0], -1))[:, [0, 1, 4, 5]]
         for dets in points:
@@ -111,8 +112,6 @@ class OCRTextRecognizer(BaseDetector):
         # print(self.model)
 
 
-
-
     def inference(self, path):
         img = cv2.imread(path)
         img = np.transpose(cv2.resize(img, (320, 32)), (0, 1, 2))
@@ -126,7 +125,6 @@ class OCRTextRecognizer(BaseDetector):
         print(self.postprocess(pred))
 
 
-
 class PaddleOCR(object):
     def __init__(self):
         super(PaddleOCR, self).__init__()
@@ -138,11 +136,11 @@ class PaddleOCR(object):
 
 
 if __name__ == '__main__':
-    file_path = './config/ppocr_rec.yaml'
+    file_path = './config/ppocr_det.yaml'
     cfgs = yaml.load(open(file_path, 'rb'), Loader=yaml.Loader)
     # test
-    # d = OCRTextRecognizer(cfgs)
-    # d.inference('./samples/word_1.png')
+    d = OCRTextDetctor(cfgs)
+    d.inference('./samples/00009282.jpg')
 
 
 
