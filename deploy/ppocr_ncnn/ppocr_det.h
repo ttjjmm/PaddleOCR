@@ -26,7 +26,7 @@ class OCRTextDet{
 public:
     OCRTextDet(const char* param, const char* bin);
     ~OCRTextDet();
-    ncnn::Net* net;
+    ncnn::Net* net{};
     std::vector<BoxInfo> detector(const cv::Mat& image);
 //    friend void display(CenterDet *cdt);
 
