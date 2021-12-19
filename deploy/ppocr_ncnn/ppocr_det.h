@@ -32,11 +32,11 @@ public:
 
 private:
     cv::Mat preprocess(const cv::Mat& image, ncnn::Mat& in, bool org_size=false, bool keep_ratio=false);
-    void decode(const ncnn::Mat& heatmap, const ncnn::Mat& reg_box, std::vector<BoxInfo>& results, float score, float nms) const;
-
-    static void draw_bboxes(const cv::Mat& image, const std::vector<BoxInfo>& bboxes);
+//    void decode(const ncnn::Mat& heatmap, const ncnn::Mat& reg_box, std::vector<BoxInfo>& results, float score, float nms) const;
+//
+//    static void draw_bboxes(const cv::Mat& image, const std::vector<BoxInfo>& bboxes);
     static cv::Mat resize(const cv::Mat& image, const cv::Size_<int>& outsize);
-    static void nms(std::vector<BoxInfo>& bboxes, float nms_thr);
+//    static void nms(std::vector<BoxInfo>& bboxes, float nms_thr);
 
 
     cv::Size_<int> in_size = cv::Size(416, 416);
