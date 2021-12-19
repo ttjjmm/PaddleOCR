@@ -165,6 +165,7 @@ std::vector<cv::Point2f> get_min_box(const std::vector<cv::Point>& points){
     return s;
 }
 
+// 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
 
 void OCRTextDet::postprocess(const cv::Mat& src){
     cv::Mat seg = src > this->thresh;
