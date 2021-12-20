@@ -42,7 +42,7 @@ include_directories(
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-add_executable(ppocr main.cpp ppocr_det.cpp ppocr_det.h ppocr_cls.cpp ppocr_cls.h)
+add_executable(ppocr main.cpp ppocr_det.cpp ppocr_det.h ppocr_cls.cpp ppocr_cls.h ppocr_rec.cpp ppocr_rec.h ppocr.cpp ppocr.h)
 
 target_link_libraries(
         ppocr
