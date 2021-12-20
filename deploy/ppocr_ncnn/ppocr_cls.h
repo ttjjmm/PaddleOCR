@@ -1,32 +1,27 @@
 //
-// Created by tjm on 2021/12/18.
+// Created by ubuntu on 2021/12/20.
 //
 
-#ifndef PPOCR_PPOCR_DET_H
-#define PPOCR_PPOCR_DET_H
+#ifndef PPOCR_PPOCR_CLS_H
+#define PPOCR_PPOCR_CLS_H
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include "net.h"
-//#include "layer.h"
 
 
-typedef struct BoxInfo{
-    float x1;
-    float y1;
-    float x2;
-    float y2;
+typedef struct ClsInfo{
+    int label;
     float score;
-} BoxInfo;
+} ClsInfo;
 
-
-class OCRTextDet{
+class OCRTextCls{
 
 public:
-    OCRTextDet(const char* param, const char* bin);
-    ~OCRTextDet();
+    OCRTextCls(const char* param, const char* bin);
+    ~OCRTextCls();
     ncnn::Net* net{};
-    cv::Mat detector(const cv::Mat& image);
+    ClsInfo detector(const cv::Mat& image);
 //    friend void display(CenterDet *cdt);
 
 private:
@@ -38,7 +33,7 @@ private:
 //    static void nms(std::vector<BoxInfo>& bboxes, float nms_thr);
     void postprocess(const cv::Mat& src);
 
-    cv::Size_<int> in_size = cv::Size(640, 640);
+    cv::Size_<int> in_size = cv::Size(192, 48);
 //    const float mean_vals[3] = {0.f, 0.f, 0.f};
 //    const float norm_vals[3] = {1/255.f, 1/255.f, 1/225.f};
     const float mean_vals[3] = {103.94f, 116.78f, 123.68f};
@@ -48,4 +43,7 @@ private:
 
 
 
-#endif //PPOCR_PPOCR_DET_H
+
+
+
+#endif //PPOCR_PPOCR_CLS_H

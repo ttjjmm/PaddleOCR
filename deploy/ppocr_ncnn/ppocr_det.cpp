@@ -126,8 +126,7 @@ cv::Mat OCRTextDet::detector(const cv::Mat& image) {
 }
 
 
-float box_score_fast(cv::Mat bitmap, cv::Mat boxPts) {
-
+float box_score_fast(const cv::Mat& bitmap, const cv::Mat& boxPts) {
     int w = bitmap.cols;
     int h = bitmap.rows;
 
@@ -146,9 +145,6 @@ float box_score_fast(cv::Mat bitmap, cv::Mat boxPts) {
     cv::Mat mask = cv::Mat::zeros(cv::Size(xmax - xmin + 1, ymax - ymin + 1), CV_8UC1);
 
     cv::Mat new_pts = boxPts.clone();
-    std::cout << new_pts << std::endl;
-    std::cout << xmin << std::endl;
-    std::cout << ymin << std::endl;
     new_pts.col(0) = new_pts.col(0) - xmin;
     new_pts.col(1) = new_pts.col(1) - ymin;
     // TODO type
@@ -158,9 +154,9 @@ float box_score_fast(cv::Mat bitmap, cv::Mat boxPts) {
     pts.push_back(new_pts);
 
     cv::fillPoly(mask, pts, 1);
-//    std::cout << cv::mean(bitmap, mask);
-
-    return 1.;
+    cv::Scalar score = cv::mean(bitmap(cv::Rect(xmin, ymin, xmax - xmin + 1, ymax - ymin + 1)), mask);
+//    std::cout << score[0] << std::endl;
+    return (float)score[0];
 }
 
 
@@ -185,7 +181,6 @@ cv::Mat get_min_box(const std::vector<cv::Point>& points){
     }
 
     cv::Mat new_boxpts = cv::Mat::zeros(cv::Size(2, 4), CV_32FC1);
-//    std::cout << boxPts.rows << std::endl;
 
     for(auto i = 0; i < 4; ++i){
         cv::Mat temp_pt = boxPts.row(inds[i]);
@@ -193,8 +188,6 @@ cv::Mat get_min_box(const std::vector<cv::Point>& points){
             new_boxpts.at<float>(i, j) = temp_pt.at<float>(0, j);
         }
     }
-//    std::cout << new_boxpts << std::endl;
-
     return new_boxpts;
 }
 
@@ -206,9 +199,21 @@ void OCRTextDet::postprocess(const cv::Mat& src){
     seg.convertTo(seg, CV_8UC1, 255);
     std::vector<std::vector<cv::Point>> contours;
     cv::findContours(seg, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
-    cv::Mat s(cv::Size(2, 4), CV_32FC1);
-    s = get_min_box(contours[0]);
-    float x =  box_score_fast(src, s);
+
+    std::vector<float> scores;
+    std::vector<cv::Mat> pts;
+
+    for(auto &contour : contours){
+        auto pt = get_min_box(contour);
+        std::cout << pt << std::endl;
+        pts.push_back(pt);
+        scores.push_back(box_score_fast(src, pt));
+    }
+
+    for(auto &s: scores){
+        std::cout << s << std::endl;
+    }
+
 //    box_score_fast(seg, s);
 //    std::cout << contours.size() << std::endl;
 

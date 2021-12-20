@@ -98,9 +98,9 @@ class DBPostProcess(object):
         else:
             index_2 = 3
             index_3 = 2
-        print(points)
+
         box = [points[index_1], points[index_2], points[index_3], points[index_4]]
-        print(box, bounding_box[1], min(bounding_box[1]))
+
         return box, min(bounding_box[1])
 
     def box_score_fast(self, bitmap, _box):
