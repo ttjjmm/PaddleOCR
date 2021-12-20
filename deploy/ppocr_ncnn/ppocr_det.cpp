@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "ppocr_det.h"
 #include "benchmark.h"
+#include "include/clipper.cpp"
 
 OCRTextDet::OCRTextDet(const char *param, const char *bin) {
     this->net = new ncnn::Net();
@@ -116,7 +117,7 @@ cv::Mat OCRTextDet::detector(const cv::Mat& image) {
     printf("Cost Time:%7.2f\n", end - start);
     cv::Mat thresh_map(preds_map.w, preds_map.h, CV_32FC1);
     memcpy((float *)thresh_map.data, preds_map.data, preds_map.h * preds_map.w * sizeof(float));
-    this->postprocess(thresh_map);
+    this->postprocess(thresh_map, 0.3);
 //    thresh_map.convertTo(thresh_map, CV_8UC1, 255);
 //    cv::imshow("r", thresh_map);
 //    std::cout << thresh_map;
@@ -124,6 +125,58 @@ cv::Mat OCRTextDet::detector(const cv::Mat& image) {
 //    CenterDet::draw_bboxes(dst, dets);
     return thresh_map;
 }
+
+
+void GetContourArea(const std::vector<std::vector<float>> &box,
+               float unclip_ratio, float &distance) {
+    int pts_num = 4;
+    float area = 0.0f;
+    float dist = 0.0f;
+    for (int i = 0; i < pts_num; i++) {
+        area += box[i][0] * box[(i + 1) % pts_num][1] -
+                box[i][1] * box[(i + 1) % pts_num][0];
+        dist += sqrtf((box[i][0] - box[(i + 1) % pts_num][0]) *
+                      (box[i][0] - box[(i + 1) % pts_num][0]) +
+                      (box[i][1] - box[(i + 1) % pts_num][1]) *
+                      (box[i][1] - box[(i + 1) % pts_num][1]));
+    }
+    area = fabs(float(area / 2.0));
+
+    distance = area * unclip_ratio / dist;
+}
+
+
+cv::RotatedRect UnClip(std::vector<std::vector<float>> box, const float &unclip_ratio) {
+    float distance = 1.0;
+
+    GetContourArea(box, unclip_ratio, distance);
+
+    ClipperLib::ClipperOffset offset;
+    ClipperLib::Path p;
+    p << ClipperLib::IntPoint(int(box[0][0]), int(box[0][1]))
+      << ClipperLib::IntPoint(int(box[1][0]), int(box[1][1]))
+      << ClipperLib::IntPoint(int(box[2][0]), int(box[2][1]))
+      << ClipperLib::IntPoint(int(box[3][0]), int(box[3][1]));
+    offset.AddPath(p, ClipperLib::jtRound, ClipperLib::etClosedPolygon);
+
+    ClipperLib::Paths soln;
+    offset.Execute(soln, distance);
+    std::vector<cv::Point2f> points;
+
+    for (int j = 0; j < soln.size(); j++) {
+        for (int i = 0; i < soln[soln.size() - 1].size(); i++) {
+            points.emplace_back(soln[j][i].X, soln[j][i].Y);
+        }
+    }
+    cv::RotatedRect res;
+    if (points.empty()) {
+        res = cv::RotatedRect(cv::Point2f(0, 0), cv::Size2f(1, 1), 0);
+    } else {
+        res = cv::minAreaRect(points);
+    }
+    return res;
+}
+
 
 
 float box_score_fast(const cv::Mat& bitmap, const cv::Mat& boxPts) {
@@ -194,7 +247,10 @@ cv::Mat get_min_box(const std::vector<cv::Point>& points){
 // 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
 
 
-void OCRTextDet::postprocess(const cv::Mat& src){
+
+
+
+void OCRTextDet::postprocess(const cv::Mat& src, float score_thr){
     cv::Mat seg = src > this->thresh;
     seg.convertTo(seg, CV_8UC1, 255);
     std::vector<std::vector<cv::Point>> contours;
@@ -205,9 +261,11 @@ void OCRTextDet::postprocess(const cv::Mat& src){
 
     for(auto &contour : contours){
         auto pt = get_min_box(contour);
-        std::cout << pt << std::endl;
+        float score = box_score_fast(src, pt);
+        if(score_thr > score) continue;
+
         pts.push_back(pt);
-        scores.push_back(box_score_fast(src, pt));
+        scores.push_back(score);
     }
 
     for(auto &s: scores){
