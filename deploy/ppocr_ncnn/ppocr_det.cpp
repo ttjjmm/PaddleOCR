@@ -1,7 +1,7 @@
 //
 // Created by tjm on 2021/12/18.
 //
-
+#include <algorithm>
 #include "ppocr_det.h"
 #include "benchmark.h"
 
@@ -126,20 +126,52 @@ cv::Mat OCRTextDet::detector(const cv::Mat& image) {
 }
 
 
-float box_score_fast(cv::Mat bitmap, cv::Mat box){
+float box_score_fast(cv::Mat bitmap, cv::Mat boxPts) {
 
+    int w = bitmap.cols;
+    int h = bitmap.rows;
+
+    double min, max;
+    int xmin, xmax;
+    int ymin, ymax;
+
+    cv::minMaxLoc(boxPts.col(0), &min, &max);
+    xmin = (std::max)((int)floor(min), 0);
+    xmax = (std::min)((int)ceil(max), w - 1);
+
+    cv::minMaxLoc(boxPts.col(1), &min, &max);
+    ymin = (std::max)((int)floor(min), 0);
+    ymax = (std::min)((int)ceil(max), h - 1);
+
+    cv::Mat mask = cv::Mat::zeros(cv::Size(xmax - xmin + 1, ymax - ymin + 1), CV_8UC1);
+
+    cv::Mat new_pts = boxPts.clone();
+    std::cout << new_pts << std::endl;
+    std::cout << xmin << std::endl;
+    std::cout << ymin << std::endl;
+    new_pts.col(0) = new_pts.col(0) - xmin;
+    new_pts.col(1) = new_pts.col(1) - ymin;
+    // TODO type
+    new_pts.convertTo(new_pts, CV_32SC1, 1, -0.5);
+//    std::vector<std::vector<cv::Point2f>> pts_array;
+    std::vector<cv::Mat> pts;
+    pts.push_back(new_pts);
+
+    cv::fillPoly(mask, pts, 1);
+//    std::cout << cv::mean(bitmap, mask);
+
+    return 1.;
 }
 
 
-std::vector<cv::Point2f> get_min_box(const std::vector<cv::Point>& points){
+cv::Mat get_min_box(const std::vector<cv::Point>& points){
     cv::RotatedRect x = cv::minAreaRect(points);
     cv::Mat boxPts;
     cv::boxPoints(x, boxPts);
-    std::cout << boxPts << std::endl;
-    std::cout << boxPts.size << std::endl;
+
     cv::sort(boxPts, boxPts, cv::SORT_EVERY_COLUMN);
-    std::cout << boxPts << std::endl;
-    uchar inds[4];
+
+    int inds[4];
 //    uchar index_1, index_2, index_3, index_4;
     if(boxPts.at<float>(1, 1) > boxPts.at<float>(0, 1)){
         inds[0] = 0; inds[3] = 1;
@@ -151,29 +183,34 @@ std::vector<cv::Point2f> get_min_box(const std::vector<cv::Point>& points){
     } else{
         inds[1] = 3; inds[2] = 2;
     }
-    std::vector<cv::Point2f> s(4);
-    for(auto i = 0; i < 4; ++i){
-        s[i] = cv::Point2f(boxPts.row(inds[i]));
-    }
 
-//    for(auto i = s.begin(); i != s.end(); ++i){
-//        std::cout << i->x  << " x " << i->y << std::endl;
-//    }
-    double min, max;
-    cv::minMaxLoc(boxPts.col(0), &min, &max);
-    std::cout << min << " x " << max << std::endl;
-    return s;
+    cv::Mat new_boxpts = cv::Mat::zeros(cv::Size(2, 4), CV_32FC1);
+//    std::cout << boxPts.rows << std::endl;
+
+    for(auto i = 0; i < 4; ++i){
+        cv::Mat temp_pt = boxPts.row(inds[i]);
+        for (auto j = 0; j < 2; ++j){
+            new_boxpts.at<float>(i, j) = temp_pt.at<float>(0, j);
+        }
+    }
+//    std::cout << new_boxpts << std::endl;
+
+    return new_boxpts;
 }
 
 // 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
+
 
 void OCRTextDet::postprocess(const cv::Mat& src){
     cv::Mat seg = src > this->thresh;
     seg.convertTo(seg, CV_8UC1, 255);
     std::vector<std::vector<cv::Point>> contours;
     cv::findContours(seg, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
-    get_min_box(contours[0]);
-    std::cout << contours.size() << std::endl;
+    cv::Mat s(cv::Size(2, 4), CV_32FC1);
+    s = get_min_box(contours[0]);
+    float x =  box_score_fast(src, s);
+//    box_score_fast(seg, s);
+//    std::cout << contours.size() << std::endl;
 
 //    for(auto i = contours.begin(); i != contours.end(); ++i){
 //        std::cout << *i << std::endl;

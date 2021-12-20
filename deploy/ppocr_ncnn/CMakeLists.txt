@@ -14,7 +14,7 @@ endif()
 #set(OpenCV_DIR "/usr/local/Cellar/opencv/4.3.0_5/lib/cmake/opencv4")
 find_package(OpenCV REQUIRED)
 
-set(ncnn_DIR "/home/tjm/opt/ncnn/build/install/lib/cmake/ncnn")
+set(ncnn_DIR "/home/ubuntu/opt/ncnn/build/install/lib/cmake/ncnn")
 find_package(ncnn REQUIRED)
 if(NOT TARGET ncnn)
     message(WARNING "ncnn NOT FOUND!  Please set ncnn_DIR environment variable")
