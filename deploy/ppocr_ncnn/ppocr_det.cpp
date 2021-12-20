@@ -177,7 +177,13 @@ cv::RotatedRect UnClip(std::vector<std::vector<float>> box, const float &unclip_
     return res;
 }
 
-
+template <class T> inline T clamp(T x, T min, T max) {
+    if (x > max)
+        return max;
+    if (x < min)
+        return min;
+    return x;
+}
 
 float box_score_fast(const cv::Mat& bitmap, const cv::Mat& boxPts) {
     int w = bitmap.cols;
