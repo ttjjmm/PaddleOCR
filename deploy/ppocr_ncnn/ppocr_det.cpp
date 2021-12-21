@@ -34,7 +34,7 @@ cv::Mat OCRTextDet::preprocess(const cv::Mat &image, ncnn::Mat& in, bool org_siz
         dst_h = dst.rows;
         in = ncnn::Mat::from_pixels(dst.data, ncnn::Mat::PIXEL_BGR, dst_w, dst_h);
     }
-    else{
+    else {
         dst_w = image.cols;
         dst_h = image.rows;
         in = ncnn::Mat::from_pixels(image.data, ncnn::Mat::PIXEL_RGB, dst_w, dst_h);
@@ -61,7 +61,7 @@ cv::Mat OCRTextDet::resize(const cv::Mat& image, const cv::Size_<int>& outsize) 
     cv::Mat dst(outsize, CV_8UC3, cv::Scalar(0, 0, 0));
     cv::Size_<int> dst_size, pad_size;
     cv:: Mat src;
-    if(ratio != 1.0){
+    if (ratio != 1.0){
         dst_size = cv::Size(floor(width * 1.0 / ratio), floor(height * 1.0 / ratio));
         cv::resize(image, src, dst_size, cv::INTER_LINEAR);
         std::cout << dst_size.height << " x " << dst_size.width << std::endl;
@@ -71,24 +71,24 @@ cv::Mat OCRTextDet::resize(const cv::Mat& image, const cv::Size_<int>& outsize) 
     pad_size = cv::Size(floor((outsize.width - dst_size.width) / 2), floor((outsize.height - dst_size.height) / 2));
     std::cout << "into height" << pad_size << std::endl;
 
-    if(pad_size.height != 0){
+    if (pad_size.height != 0){
         // inital pointer of dst mat
         auto init = dst.data + 3 * outsize.width * pad_size.height;
-        for(int i = 0; i < dst_size.height; ++i){
+        for (int i = 0; i < dst_size.height; ++i){
             memcpy(init + i * outsize.width * 3,
                    src.data + i * outsize.width * 3,
                    outsize.width * 3);
         }
     }
-    else if(pad_size.width != 0){
-        for(int i = 0; i < outsize.height; ++i){
+    else if (pad_size.width != 0){
+        for (int i = 0; i < outsize.height; ++i){
             memcpy(dst.data + (i * outsize.width + pad_size.width) * 3,
                    src.data + i * dst_size.width * 3,
                    dst_size.width * 3);
         }
     }
     else {
-        for(int i = 0; i < outsize.height; ++i){
+        for (int i = 0; i < outsize.height; ++i){
             memcpy(dst.data + (i * outsize.width + pad_size.width) * 3,
                    src.data + i * dst_size.width * 3,
                    dst_size.width * 3);
@@ -170,9 +170,9 @@ void GetContourArea(const cv::Mat& box,
 std::vector<std::vector<float>> mat2vec(const cv::Mat& src) {
     std::vector<std::vector<float>> vec;
     std::vector<float> temp;
-    for(auto i = 0; i < src.rows; ++i) {
+    for (auto i = 0; i < src.rows; ++i) {
         temp.clear();
-        for(auto j = 0; j < src.cols; ++j) {
+        for (auto j = 0; j < src.cols; ++j) {
             temp.push_back(src.at<float>(i, j));
         }
         vec.push_back(temp);
@@ -213,7 +213,7 @@ std::vector<std::vector<float>> mat2vec(const cv::Mat& src) {
 //}
 
 
-cv::RotatedRect unclip(const cv::Mat& box, const float &unclip_ratio) {
+std::vector<cv::Point> unclip(const cv::Mat& box, const float &unclip_ratio) {
     float distance = 1.0;
 
     GetContourArea(box, unclip_ratio, distance);
@@ -228,24 +228,23 @@ cv::RotatedRect unclip(const cv::Mat& box, const float &unclip_ratio) {
 
     ClipperLib::Paths soln;
     offset.Execute(soln, distance);
-    std::vector<cv::Point2f> points;
+    std::vector<cv::Point> points;
 
     for (int j = 0; j < soln.size(); j++) {
         for (int i = 0; i < soln[soln.size() - 1].size(); i++) {
             points.emplace_back(soln[j][i].X, soln[j][i].Y);
         }
     }
-    cv::RotatedRect res;
-    if (points.empty()) {
-        res = cv::RotatedRect(cv::Point2f(0, 0), cv::Size2f(1, 1), 0);
-    } else {
-        res = cv::minAreaRect(points);
-    }
-    return res;
+
+    return points;
+//    cv::RotatedRect res;
+//    if (points.empty()) {
+//        res = cv::RotatedRect(cv::Point2f(0, 0), cv::Size2f(1, 1), 0);
+//    } else {
+//        res = cv::minAreaRect(points);
+//    }
+//    return res;
 }
-
-
-
 
 
 template <class T> inline T clamp(T x, T min, T max) {
@@ -291,7 +290,12 @@ float box_score_fast(const cv::Mat& bitmap, const cv::Mat& boxPts) {
 
 
 cv::Mat get_min_box(const std::vector<cv::Point>& points, float& ssid){
-    cv::RotatedRect rbox = cv::minAreaRect(points);
+    cv::RotatedRect rbox;
+    if (points.empty())
+        rbox = cv::RotatedRect(cv::Point(0, 0), cv::Size(1, 1), 0);
+    else
+        rbox = cv::minAreaRect(points);
+
     ssid = std::max(rbox.size.width, rbox.size.height);
 
     cv::Mat boxPts;
@@ -300,7 +304,7 @@ cv::Mat get_min_box(const std::vector<cv::Point>& points, float& ssid){
     cv::sort(boxPts, boxPts, cv::SORT_EVERY_COLUMN);
     cv::Mat new_boxpts = cv::Mat::zeros(cv::Size(2, 4), CV_32FC1);
 
-    if(boxPts.at<float>(1, 1) > boxPts.at<float>(0, 1)){
+    if (boxPts.at<float>(1, 1) > boxPts.at<float>(0, 1)){
         boxPts.row(0).copyTo(new_boxpts.row(0));
         boxPts.row(1).copyTo(new_boxpts.row(3));
 //        inds[0] = 0; inds[3] = 1;
@@ -309,7 +313,7 @@ cv::Mat get_min_box(const std::vector<cv::Point>& points, float& ssid){
         boxPts.row(0).copyTo(new_boxpts.row(3));
 //        inds[0] = 1; inds[3] = 0;
     }
-    if(boxPts.at<float>(3, 1) > boxPts.at<float>(2, 1)){
+    if (boxPts.at<float>(3, 1) > boxPts.at<float>(2, 1)){
         boxPts.row(2).copyTo(new_boxpts.row(1));
         boxPts.row(3).copyTo(new_boxpts.row(2));
 //        inds[1] = 2; inds[2] = 3;
@@ -344,13 +348,13 @@ void OCRTextDet::postprocess(const cv::Mat& src, float score_thr, float unclip_r
         if (ssid < min_size) continue;
 
         float score = box_score_fast(src, pt);
-        if(score_thr > score) continue;
+        if (score_thr > score) continue;
 
 //        auto box_vec = mat2vec(pt);
 
         auto x = unclip(pt, unclip_ratio);
-        std::cout << x.center << std::endl;
-
+//        std::cout << x.center << std::endl;
+        auto z = get_min_box(x, ssid);
         pts.push_back(pt);
         scores.push_back(score);
     }
@@ -359,13 +363,7 @@ void OCRTextDet::postprocess(const cv::Mat& src, float score_thr, float unclip_r
         std::cout << s << std::endl;
     }
 
-//    box_score_fast(seg, s);
-//    std::cout << contours.size() << std::endl;
 
-//    for(auto i = contours.begin(); i != contours.end(); ++i){
-//        std::cout << *i << std::endl;
-//    }
-//    std::cout << contours.size();
     cv::imshow("rs", seg);
 //    std::cout << seg;
 }
