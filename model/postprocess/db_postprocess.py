@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 import torch
@@ -14,7 +15,7 @@ class DBPostProcess(object):
                  box_thresh=0.7,
                  max_candidates=1000,
                  unclip_ratio=2.0,
-                 use_dilation=False,
+                 use_dilation=True,
                  score_mode="fast",
                  **kwargs):
         self.thresh = thresh
@@ -34,7 +35,6 @@ class DBPostProcess(object):
         """
         bitmap = _bitmap
         height, width = bitmap.shape
-
         outs = cv2.findContours((bitmap * 255).astype(np.uint8), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
         if len(outs) == 3:
@@ -45,6 +45,7 @@ class DBPostProcess(object):
         num_contours = min(len(contours), self.max_candidates)
 
         boxes = []
+        boxes_org = []
         scores = []
         for index in range(num_contours):
             contour = contours[index]
@@ -64,14 +65,14 @@ class DBPostProcess(object):
             if sside < self.min_size + 2:
                 continue
             box = np.array(box)
-
+            boxes_org.append(box.astype(np.int))
             box[:, 0] = np.clip(
                 np.round(box[:, 0] / width * dest_width), 0, dest_width)
             box[:, 1] = np.clip(
                 np.round(box[:, 1] / height * dest_height), 0, dest_height)
             boxes.append(box.astype(np.int16))
             scores.append(score)
-        return np.array(boxes, dtype=np.int16), scores
+        return np.array(boxes, dtype=np.int16), scores, boxes_org
 
     def unclip(self, box):
         unclip_ratio = self.unclip_ratio
@@ -158,7 +159,7 @@ class DBPostProcess(object):
                     self.dilation_kernel)
             else:
                 mask = segmentation[batch_index]
-            boxes, scores = self.boxes_from_bitmap(pred[batch_index], mask, src_w, src_h)
-
-            boxes_batch.append({'points': boxes, 'scores': scores})
+            boxes, scores, boxes_org = self.boxes_from_bitmap(pred[batch_index], mask, src_w, src_h)
+            # print(boxes_org)
+            boxes_batch.append({'points': boxes, 'scores': scores, 'boxes_org': boxes_org})
         return boxes_batch

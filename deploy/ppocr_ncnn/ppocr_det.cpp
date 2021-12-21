@@ -117,7 +117,12 @@ cv::Mat OCRTextDet::detector(const cv::Mat& image) {
     printf("Cost Time:%7.2f\n", end - start);
     cv::Mat thresh_map(preds_map.w, preds_map.h, CV_32FC1);
     memcpy((float *)thresh_map.data, preds_map.data, preds_map.h * preds_map.w * sizeof(float));
-    this->postprocess(thresh_map, 0.3, 1.5);
+
+    cv::Mat test;
+    thresh_map.convertTo(test, CV_8UC1, 255);
+    cv::imshow("test", test);
+
+    this->postprocess(thresh_map, 0.3, 2.5);
 //    thresh_map.convertTo(thresh_map, CV_8UC1, 255);
 //    cv::imshow("r", thresh_map);
 //    std::cout << thresh_map;
@@ -329,22 +334,43 @@ cv::Mat get_min_box(const std::vector<cv::Point>& points, float& ssid){
 // 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
 
 
+void mat2points(const cv::Mat& src, std::vector<cv::Point2i>& pt_vec, const int& w, const int& h) {
+    double min, max;
+    int xmin, xmax, ymin, ymax;
 
+    cv::minMaxLoc(src.col(0), &min, &max);
+    xmin = clamp((int)floor(min), 0, w - 1);
+    xmax = clamp((int)ceil(max), 0, w - 1);
+
+    min = 0; max = 0;
+    cv::minMaxLoc(src.col(1), &min, &max);
+    ymin = clamp((int)floor(min), 0, h - 1);
+    ymax = clamp((int)ceil(max), 0, h - 1);
+
+    pt_vec.emplace_back(xmin, ymin);
+    pt_vec.emplace_back(xmax, ymax);
+
+}
 
 
 void OCRTextDet::postprocess(const cv::Mat& src, float score_thr, float unclip_ratio){
     cv::Mat seg = src > this->thresh;
     seg.convertTo(seg, CV_8UC1, 255);
+//    cv::Mat dila_ele = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(2, 2));
+//    cv::dilate(seg, seg, dila_ele);
     std::vector<std::vector<cv::Point>> contours;
-    cv::findContours(seg, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
+    std::vector<cv::Vec4i> hier;
+    cv::findContours(seg, contours, hier, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
     std::vector<float> scores;
     std::vector<cv::Mat> pts;
     const float min_size = 3.;
-
-    for(auto &contour : contours){
+    const int max_candidates = 1000;
+    int num_contours = contours.size() >= max_candidates ? max_candidates : (int)contours.size();
+    std::cout << "det before postprocess: " << num_contours << std::endl;
+    for(auto i = 0; i < num_contours; ++i){
         float ssid;
-        auto pt = get_min_box(contour, ssid);
+        auto pt = get_min_box(contours[i], ssid);
         if (ssid < min_size) continue;
 
         float score = box_score_fast(src, pt);
@@ -355,16 +381,32 @@ void OCRTextDet::postprocess(const cv::Mat& src, float score_thr, float unclip_r
         auto x = unclip(pt, unclip_ratio);
 //        std::cout << x.center << std::endl;
         auto z = get_min_box(x, ssid);
+
+        if (ssid < min_size + 2) continue;
+//        std::cout << z << std::endl;
+//
         pts.push_back(pt);
         scores.push_back(score);
     }
 
-    for(auto &s: scores){
-        std::cout << s << std::endl;
+//    for(auto &s: scores){
+//        std::cout << s << std::endl;
+//    }
+    cv::Mat seg_three;
+    std::vector<cv::Mat> s{seg * 255, seg *255, seg * 255};
+    cv::merge(s, seg_three);
+    int w = seg.cols;
+    int h = seg.rows;
+    std::cout << "det after postprocess: " << pts.size() << std::endl;
+    for (auto &pt: pts) {
+        std::vector<cv::Point2i> points;
+        mat2points(pt, points, w, h);
+//        std::cout << "x1: " << points[0] << ", x2: " << points[1] << std::endl;
+        cv::rectangle(seg_three, points[0], points[1], cv::Scalar(0, 0, 255), 2, cv::LINE_4);
     }
 
-
-    cv::imshow("rs", seg);
+//    std::cout << seg << std::endl;
+    cv::imshow("rs", seg_three);
 //    std::cout << seg;
 }
 

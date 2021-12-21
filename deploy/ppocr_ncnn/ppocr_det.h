@@ -38,7 +38,7 @@ private:
 //    static void nms(std::vector<BoxInfo>& bboxes, float nms_thr);
     void postprocess(const cv::Mat& src, float score_thr, float unclip_ratio);
 
-    cv::Size_<int> in_size = cv::Size(640, 640);
+    cv::Size_<int> in_size = cv::Size(480, 480);
 //    const float mean_vals[3] = {0.f, 0.f, 0.f};
 //    const float norm_vals[3] = {1/255.f, 1/255.f, 1/225.f};
     const float mean_vals[3] = {103.94f, 116.78f, 123.68f};
