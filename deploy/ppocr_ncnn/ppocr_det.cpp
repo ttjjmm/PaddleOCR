@@ -122,7 +122,7 @@ cv::Mat OCRTextDet::detector(const cv::Mat& image) {
     thresh_map.convertTo(test, CV_8UC1, 255);
     cv::imshow("test", test);
 
-    this->postprocess(thresh_map, 0.3, 2.5);
+    this->postprocess(thresh_map, 0.3, 4);
 //    thresh_map.convertTo(thresh_map, CV_8UC1, 255);
 //    cv::imshow("r", thresh_map);
 //    std::cout << thresh_map;
@@ -385,7 +385,7 @@ void OCRTextDet::postprocess(const cv::Mat& src, float score_thr, float unclip_r
         if (ssid < min_size + 2) continue;
 //        std::cout << z << std::endl;
 //
-        pts.push_back(pt);
+        pts.push_back(z);
         scores.push_back(score);
     }
 
