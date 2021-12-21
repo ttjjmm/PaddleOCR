@@ -14,7 +14,7 @@ endif()
 #set(OpenCV_DIR "/usr/local/Cellar/opencv/4.3.0_5/lib/cmake/opencv4")
 find_package(OpenCV REQUIRED)
 
-set(ncnn_DIR "/home/tjm/opt/ncnn/build/install/lib/cmake/ncnn")
+set(ncnn_DIR "/home/ubuntu/opt/ncnn/build/install/lib/cmake/ncnn")
 find_package(ncnn REQUIRED)
 if(NOT TARGET ncnn)
     message(WARNING "ncnn NOT FOUND!  Please set ncnn_DIR environment variable")
@@ -43,7 +43,7 @@ include_directories(
 )
 
 add_executable(ppocr main.cpp ppocr_det.cpp ppocr_det.h ppocr_cls.cpp
-        ppocr_cls.h ppocr_rec.cpp ppocr_rec.h ppocr.cpp ppocr.h include/clipper.cpp include/clipper.h)
+        ppocr_cls.h ppocr_rec.cpp ppocr_rec.h ppocr.cpp ppocr.h include/clipper.h)
 
 target_link_libraries(
         ppocr

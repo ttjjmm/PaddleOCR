@@ -15,7 +15,7 @@ class PPOCRBase{
 
 public:
     PPOCRBase(const char* param, const char* bin);
-    PPOCRBase(const char* param, const char* bin, cv::Size_<int> input_size): PPOCRBase(param, bin), in_size(input_size) {};
+//    PPOCRBase(const char* param, const char* bin, cv::Size_<int> input_size): PPOCRBase(param, bin), in_size(input_size) {};
     ~PPOCRBase(){
         delete this->net;
     }

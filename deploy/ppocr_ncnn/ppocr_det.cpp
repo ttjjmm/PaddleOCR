@@ -117,7 +117,7 @@ cv::Mat OCRTextDet::detector(const cv::Mat& image) {
     printf("Cost Time:%7.2f\n", end - start);
     cv::Mat thresh_map(preds_map.w, preds_map.h, CV_32FC1);
     memcpy((float *)thresh_map.data, preds_map.data, preds_map.h * preds_map.w * sizeof(float));
-    this->postprocess(thresh_map, 0.3);
+    this->postprocess(thresh_map, 0.3, 1.5);
 //    thresh_map.convertTo(thresh_map, CV_8UC1, 255);
 //    cv::imshow("r", thresh_map);
 //    std::cout << thresh_map;
@@ -127,18 +127,38 @@ cv::Mat OCRTextDet::detector(const cv::Mat& image) {
 }
 
 
-void GetContourArea(const std::vector<std::vector<float>> &box,
-               float unclip_ratio, float &distance) {
+//void GetContourArea(const std::vector<std::vector<float>> &box,
+//               float unclip_ratio, float &distance) {
+//    int pts_num = 4;
+//    float area = 0.0f;
+//    float dist = 0.0f;
+//    for (int i = 0; i < pts_num; i++) {
+//        area += box[i][0] * box[(i + 1) % pts_num][1] -
+//                box[i][1] * box[(i + 1) % pts_num][0];
+//        dist += sqrtf((box[i][0] - box[(i + 1) % pts_num][0]) *
+//                      (box[i][0] - box[(i + 1) % pts_num][0]) +
+//                      (box[i][1] - box[(i + 1) % pts_num][1]) *
+//                      (box[i][1] - box[(i + 1) % pts_num][1]));
+//    }
+//    area = fabs(float(area / 2.0));
+//
+//    distance = area * unclip_ratio / dist;
+//}
+
+
+void GetContourArea(const cv::Mat& box,
+                    float unclip_ratio, float& distance) {
     int pts_num = 4;
     float area = 0.0f;
     float dist = 0.0f;
     for (int i = 0; i < pts_num; i++) {
-        area += box[i][0] * box[(i + 1) % pts_num][1] -
-                box[i][1] * box[(i + 1) % pts_num][0];
-        dist += sqrtf((box[i][0] - box[(i + 1) % pts_num][0]) *
-                      (box[i][0] - box[(i + 1) % pts_num][0]) +
-                      (box[i][1] - box[(i + 1) % pts_num][1]) *
-                      (box[i][1] - box[(i + 1) % pts_num][1]));
+        area += box.at<float>(i, 0) * box.at<float>((i + 1) % pts_num, 1) -
+                box.at<float>(i, 1) * box.at<float>((i + 1) % pts_num, 0);
+        dist += sqrtf(
+                (box.at<float>(i, 0) - box.at<float>((i + 1) % pts_num, 0)) *
+                (box.at<float>(i, 0) - box.at<float>((i + 1) % pts_num, 0)) +
+                (box.at<float>(i, 1) - box.at<float>((i + 1) % pts_num, 1)) *
+                (box.at<float>(i, 1) - box.at<float>((i + 1) % pts_num, 1)));
     }
     area = fabs(float(area / 2.0));
 
@@ -146,17 +166,64 @@ void GetContourArea(const std::vector<std::vector<float>> &box,
 }
 
 
-cv::RotatedRect UnClip(std::vector<std::vector<float>> box, const float &unclip_ratio) {
+
+std::vector<std::vector<float>> mat2vec(const cv::Mat& src) {
+    std::vector<std::vector<float>> vec;
+    std::vector<float> temp;
+    for(auto i = 0; i < src.rows; ++i) {
+        temp.clear();
+        for(auto j = 0; j < src.cols; ++j) {
+            temp.push_back(src.at<float>(i, j));
+        }
+        vec.push_back(temp);
+    }
+    return vec;
+}
+
+
+//cv::RotatedRect unclip(std::vector<std::vector<float>> box, const float &unclip_ratio) {
+//    float distance = 1.0;
+//
+//    GetContourArea(box, unclip_ratio, distance);
+//
+//    ClipperLib::ClipperOffset offset;
+//    ClipperLib::Path p;
+//    p << ClipperLib::IntPoint(int(box[0][0]), int(box[0][1]))
+//      << ClipperLib::IntPoint(int(box[1][0]), int(box[1][1]))
+//      << ClipperLib::IntPoint(int(box[2][0]), int(box[2][1]))
+//      << ClipperLib::IntPoint(int(box[3][0]), int(box[3][1]));
+//    offset.AddPath(p, ClipperLib::jtRound, ClipperLib::etClosedPolygon);
+//
+//    ClipperLib::Paths soln;
+//    offset.Execute(soln, distance);
+//    std::vector<cv::Point2f> points;
+//
+//    for (int j = 0; j < soln.size(); j++) {
+//        for (int i = 0; i < soln[soln.size() - 1].size(); i++) {
+//            points.emplace_back(soln[j][i].X, soln[j][i].Y);
+//        }
+//    }
+//    cv::RotatedRect res;
+//    if (points.empty()) {
+//        res = cv::RotatedRect(cv::Point2f(0, 0), cv::Size2f(1, 1), 0);
+//    } else {
+//        res = cv::minAreaRect(points);
+//    }
+//    return res;
+//}
+
+
+cv::RotatedRect unclip(const cv::Mat& box, const float &unclip_ratio) {
     float distance = 1.0;
 
     GetContourArea(box, unclip_ratio, distance);
 
     ClipperLib::ClipperOffset offset;
     ClipperLib::Path p;
-    p << ClipperLib::IntPoint(int(box[0][0]), int(box[0][1]))
-      << ClipperLib::IntPoint(int(box[1][0]), int(box[1][1]))
-      << ClipperLib::IntPoint(int(box[2][0]), int(box[2][1]))
-      << ClipperLib::IntPoint(int(box[3][0]), int(box[3][1]));
+    p << ClipperLib::IntPoint(int(box.at<float>(0, 0)), int(box.at<float>(0, 1)))
+      << ClipperLib::IntPoint(int(box.at<float>(1, 0)), int(box.at<float>(1, 1)))
+      << ClipperLib::IntPoint(int(box.at<float>(2, 0)), int(box.at<float>(2, 1)))
+      << ClipperLib::IntPoint(int(box.at<float>(3, 0)), int(box.at<float>(3, 1)));
     offset.AddPath(p, ClipperLib::jtRound, ClipperLib::etClosedPolygon);
 
     ClipperLib::Paths soln;
@@ -177,6 +244,10 @@ cv::RotatedRect UnClip(std::vector<std::vector<float>> box, const float &unclip_
     return res;
 }
 
+
+
+
+
 template <class T> inline T clamp(T x, T min, T max) {
     if (x > max)
         return max;
@@ -194,18 +265,18 @@ float box_score_fast(const cv::Mat& bitmap, const cv::Mat& boxPts) {
     int ymin, ymax;
 
     cv::minMaxLoc(boxPts.col(0), &min, &max);
-    xmin = (std::max)((int)floor(min), 0);
-    xmax = (std::min)((int)ceil(max), w - 1);
+    xmin = clamp((int)floor(min), 0, w - 1);
+    xmax = clamp((int)ceil(max), 0, w - 1);
 
     cv::minMaxLoc(boxPts.col(1), &min, &max);
-    ymin = (std::max)((int)floor(min), 0);
-    ymax = (std::min)((int)ceil(max), h - 1);
+    ymin = clamp((int)floor(min), 0, h - 1);
+    ymax = clamp((int)ceil(max), 0, h - 1);
 
     cv::Mat mask = cv::Mat::zeros(cv::Size(xmax - xmin + 1, ymax - ymin + 1), CV_8UC1);
 
     cv::Mat new_pts = boxPts.clone();
-    new_pts.col(0) = new_pts.col(0) - xmin;
-    new_pts.col(1) = new_pts.col(1) - ymin;
+    new_pts.col(0) -= xmin;
+    new_pts.col(1) -= ymin;
     // TODO type
     new_pts.convertTo(new_pts, CV_32SC1, 1, -0.5);
 //    std::vector<std::vector<cv::Point2f>> pts_array;
@@ -219,34 +290,35 @@ float box_score_fast(const cv::Mat& bitmap, const cv::Mat& boxPts) {
 }
 
 
-cv::Mat get_min_box(const std::vector<cv::Point>& points){
-    cv::RotatedRect x = cv::minAreaRect(points);
+cv::Mat get_min_box(const std::vector<cv::Point>& points, float& ssid){
+    cv::RotatedRect rbox = cv::minAreaRect(points);
+    ssid = std::max(rbox.size.width, rbox.size.height);
+
     cv::Mat boxPts;
-    cv::boxPoints(x, boxPts);
+    cv::boxPoints(rbox, boxPts);
 
     cv::sort(boxPts, boxPts, cv::SORT_EVERY_COLUMN);
-
-    int inds[4];
-//    uchar index_1, index_2, index_3, index_4;
-    if(boxPts.at<float>(1, 1) > boxPts.at<float>(0, 1)){
-        inds[0] = 0; inds[3] = 1;
-    } else{
-        inds[0] = 1; inds[3] = 0;
-    }
-    if(boxPts.at<float>(3, 1) > boxPts.at<float>(2, 1)){
-        inds[1] = 2; inds[2] = 3;
-    } else{
-        inds[1] = 3; inds[2] = 2;
-    }
-
     cv::Mat new_boxpts = cv::Mat::zeros(cv::Size(2, 4), CV_32FC1);
 
-    for(auto i = 0; i < 4; ++i){
-        cv::Mat temp_pt = boxPts.row(inds[i]);
-        for (auto j = 0; j < 2; ++j){
-            new_boxpts.at<float>(i, j) = temp_pt.at<float>(0, j);
-        }
+    if(boxPts.at<float>(1, 1) > boxPts.at<float>(0, 1)){
+        boxPts.row(0).copyTo(new_boxpts.row(0));
+        boxPts.row(1).copyTo(new_boxpts.row(3));
+//        inds[0] = 0; inds[3] = 1;
+    } else{
+        boxPts.row(1).copyTo(new_boxpts.row(0));
+        boxPts.row(0).copyTo(new_boxpts.row(3));
+//        inds[0] = 1; inds[3] = 0;
     }
+    if(boxPts.at<float>(3, 1) > boxPts.at<float>(2, 1)){
+        boxPts.row(2).copyTo(new_boxpts.row(1));
+        boxPts.row(3).copyTo(new_boxpts.row(2));
+//        inds[1] = 2; inds[2] = 3;
+    } else{
+        boxPts.row(3).copyTo(new_boxpts.row(1));
+        boxPts.row(2).copyTo(new_boxpts.row(2));
+//        inds[1] = 3; inds[2] = 2;
+    }
+
     return new_boxpts;
 }
 
@@ -256,7 +328,7 @@ cv::Mat get_min_box(const std::vector<cv::Point>& points){
 
 
 
-void OCRTextDet::postprocess(const cv::Mat& src, float score_thr){
+void OCRTextDet::postprocess(const cv::Mat& src, float score_thr, float unclip_ratio){
     cv::Mat seg = src > this->thresh;
     seg.convertTo(seg, CV_8UC1, 255);
     std::vector<std::vector<cv::Point>> contours;
@@ -264,11 +336,20 @@ void OCRTextDet::postprocess(const cv::Mat& src, float score_thr){
 
     std::vector<float> scores;
     std::vector<cv::Mat> pts;
+    const float min_size = 3.;
 
     for(auto &contour : contours){
-        auto pt = get_min_box(contour);
+        float ssid;
+        auto pt = get_min_box(contour, ssid);
+        if (ssid < min_size) continue;
+
         float score = box_score_fast(src, pt);
         if(score_thr > score) continue;
+
+//        auto box_vec = mat2vec(pt);
+
+        auto x = unclip(pt, unclip_ratio);
+        std::cout << x.center << std::endl;
 
         pts.push_back(pt);
         scores.push_back(score);
