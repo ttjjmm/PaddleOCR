@@ -36,7 +36,7 @@ private:
     int max_side_len = 960;
     float thresh = 0.3;
     float box_thresh = 0.5;
-    float unclip_ratio = 1.5;
+    float unclip_ratio = 2;
     cv::Size_<int> in_size = cv::Size(480, 480);
 //    const float mean_vals[3] = {0.485f, 0.456f, 0.406f};
 //    const float norm_vals[3] = {1/0.229f, 1/0.224f, 1/0.225f};

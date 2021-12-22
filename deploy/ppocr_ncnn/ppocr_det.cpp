@@ -259,25 +259,32 @@ cv::Mat get_min_box(const std::vector<cv::Point>& points, float& ssid){
 
     ssid = std::max(rbox.size.width, rbox.size.height);
 
-    cv::Mat boxPts;
+    cv::Mat boxPts, sort_idx;
+    cv::Mat sorted_boxpts = cv::Mat::zeros(cv::Size(2, 4), CV_32FC1);
     cv::boxPoints(rbox, boxPts);
 
-    cv::sort(boxPts, boxPts, cv::SORT_EVERY_COLUMN);
+    cv::sortIdx(boxPts.col(0), sort_idx, cv::SORT_EVERY_COLUMN);
+    std::cout << "1. " << boxPts << std::endl;
+    for (auto i = 0; i < 4; ++i){
+        boxPts.row(sort_idx.at<int>(i)).copyTo(sorted_boxpts.row(i));
+    }
+    std::cout << "2. " << boxPts << std::endl;
+
     cv::Mat new_boxpts = cv::Mat::zeros(cv::Size(2, 4), CV_32FC1);
 
-    if (boxPts.at<float>(1, 1) > boxPts.at<float>(0, 1)) {
-        boxPts.row(0).copyTo(new_boxpts.row(0));
-        boxPts.row(1).copyTo(new_boxpts.row(3));
+    if (sorted_boxpts.at<float>(1, 1) > sorted_boxpts.at<float>(0, 1)) {
+        sorted_boxpts.row(0).copyTo(new_boxpts.row(0));
+        sorted_boxpts.row(1).copyTo(new_boxpts.row(3));
     } else {
-        boxPts.row(1).copyTo(new_boxpts.row(0));
-        boxPts.row(0).copyTo(new_boxpts.row(3));
+        sorted_boxpts.row(1).copyTo(new_boxpts.row(0));
+        sorted_boxpts.row(0).copyTo(new_boxpts.row(3));
     }
-    if (boxPts.at<float>(3, 1) > boxPts.at<float>(2, 1)) {
-        boxPts.row(2).copyTo(new_boxpts.row(1));
-        boxPts.row(3).copyTo(new_boxpts.row(2));
+    if (sorted_boxpts.at<float>(3, 1) > sorted_boxpts.at<float>(2, 1)) {
+        sorted_boxpts.row(2).copyTo(new_boxpts.row(1));
+        sorted_boxpts.row(3).copyTo(new_boxpts.row(2));
     } else {
-        boxPts.row(3).copyTo(new_boxpts.row(1));
-        boxPts.row(2).copyTo(new_boxpts.row(2));
+        sorted_boxpts.row(3).copyTo(new_boxpts.row(1));
+        sorted_boxpts.row(2).copyTo(new_boxpts.row(2));
     }
     return new_boxpts;
 }
@@ -334,7 +341,7 @@ void OCRTextDet::postprocess(const cv::Mat& src, std::vector<BoxInfo>& boxes,
 //        std::cout << x.center << std::endl;
         auto z = get_min_box(x, ssid);
 
-//        if (ssid < min_size + 2) continue;
+        if (ssid < min_size + 2) continue;
 
 
         pts.push_back(z);

@@ -97,20 +97,11 @@ class OCRTextDetctor(BaseDetector):
         with torch.no_grad():
             pred = self.model(image)
 
-        map = pred['maps'].cpu().squeeze(0).squeeze(0).numpy()
-
-        print(map.shape, map.max(), map.min())
-        plt.imshow(map)
-        plt.show()
-
         shape_list = np.expand_dims(shape_list, 0)
         det_bboxes = self.postprocess(pred, shape_list)
         # print(det_bboxes)
-
-
-
         points = det_bboxes[0]['points']
-        print(points)
+
         points = np.reshape(points, (points.shape[0], -1))[:, [0, 1, 4, 5]]
         for dets in points:
             cv2.rectangle(raw_image, (dets[0], dets[1]), (dets[2], dets[3]), (255, 0, 0), 2, cv2.LINE_4)
