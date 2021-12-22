@@ -12,7 +12,7 @@
 class DBPostProcess {
 
 public:
-    
+
     std::vector<cv::Point> unclip(const cv::Mat& box, const float &unclip_ratio);
     float box_score_fast(const cv::Mat& bitmap, const cv::Mat& boxPts);
     cv::Mat get_min_box(const std::vector<cv::Point>& points, float& ssid);
