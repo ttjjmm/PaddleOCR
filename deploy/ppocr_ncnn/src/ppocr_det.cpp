@@ -3,7 +3,7 @@
 //
 #include <iostream>
 #include <algorithm>
-#include "ppocr_det.h"
+#include "include/ppocr_det.h"
 #include "benchmark.h"
 #include "include/clipper.cpp"
 
