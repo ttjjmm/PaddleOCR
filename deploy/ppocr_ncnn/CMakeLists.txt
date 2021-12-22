@@ -43,7 +43,7 @@ include_directories(
 )
 
 add_executable(ppocr main.cpp ppocr_det.cpp ppocr_det.h ppocr_cls.cpp
-        ppocr_cls.h ppocr_rec.cpp ppocr_rec.h ppocr.cpp ppocr.h include/clipper.h)
+        ppocr_cls.h ppocr_rec.cpp ppocr_rec.h ppocr.cpp ppocr.h include/clipper.h include/db_postprocess.h src/db_postprecess.cpp)
 
 target_link_libraries(
         ppocr
