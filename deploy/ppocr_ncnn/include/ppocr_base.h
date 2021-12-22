@@ -2,8 +2,8 @@
 // Created by ubuntu on 2021/12/20.
 //
 
-#ifndef PPOCR_PPOCR_H
-#define PPOCR_PPOCR_H
+#ifndef PPOCR_PPOCR_BASE_H
+#define PPOCR_PPOCR_BASE_H
 
 
 #include <iostream>
@@ -15,7 +15,6 @@ class PPOCRBase{
 
 public:
     PPOCRBase(const char* param, const char* bin);
-//    PPOCRBase(const char* param, const char* bin, cv::Size_<int> input_size): PPOCRBase(param, bin), in_size(input_size) {};
     ~PPOCRBase(){
         delete this->net;
     }
@@ -38,19 +37,19 @@ private:
 };
 
 
-class PPOCRDetector: public PPOCRBase{
+//class PPOCRDetector: public PPOCRBase{
+//
+//public:
+//    // use base class initialize the parameters
+//    PPOCRDetector(const char* param, const char* bin): PPOCRBase(param, bin){};
+//    ~PPOCRDetector(){
+//        delete this->net;
+//    }
+//
+//private:
+//    void postprocess(const cv::Mat& src) override;
+//};
 
-public:
-    // use base class initialize the parameters
-    PPOCRDetector(const char* param, const char* bin): PPOCRBase(param, bin){};
-    ~PPOCRDetector(){
-        delete this->net;
-    }
-
-private:
-    void postprocess(const cv::Mat& src) override;
-};
 
 
-
-#endif //PPOCR_PPOCR_H
+#endif //PPOCR_PPOCR_BASE_H

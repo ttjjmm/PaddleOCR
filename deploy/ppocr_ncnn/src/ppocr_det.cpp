@@ -142,7 +142,7 @@ std::vector<BoxInfo> OCRTextDet::detector(const cv::Mat &image) {
     double start = ncnn::get_current_time();
     auto ex = this->net->create_extractor();
 //    ex.set_light_mode(true);
-    ex.set_num_threads(4);
+    ex.set_num_threads(6);
     ex.input("input.1", in);
     ex.extract("preds", preds_map);
 
@@ -162,64 +162,6 @@ std::vector<BoxInfo> OCRTextDet::detector(const cv::Mat &image) {
 // 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
 
 
-
-
-//void OCRTextDet::postprocess(const cv::Mat& src, std::vector<BoxInfo>& boxes,
-//                             const float& r_w, const float& r_h) const {
-//    cv::Mat seg = src > this->thresh;
-//    seg.convertTo(seg, CV_8UC1, 255);
-////    cv::Mat dila_ele = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(2, 2));
-////    cv::dilate(seg, seg, dila_ele);
-//    std::vector<std::vector<cv::Point>> contours;
-//    cv::findContours(seg, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
-//
-//    std::vector<float> scores;
-//    std::vector<cv::Mat> pts;
-//    const float min_size = 3.;
-//    const int max_candidates = 1000;
-//    int num_contours = contours.size() >= max_candidates ? max_candidates : (int)contours.size();
-//    std::cout << "det before postprocess: " << num_contours << std::endl;
-//    for(auto i = 0; i < num_contours; ++i) {
-//        float ssid;
-//        auto pt = get_min_box(contours[i], ssid);
-//        if (ssid < min_size) continue;
-//
-//        float score = box_score_fast(src, pt);
-//        if (this->box_thresh > score) continue;
-//
-//        auto x = unclip(pt, this->unclip_ratio);
-////        std::cout << x.center << std::endl;
-//        auto z = get_min_box(x, ssid);
-//
-//        if (ssid < min_size + 2) continue;
-//
-//
-//        pts.push_back(z);
-//        scores.push_back(score);
-//    }
-//
-//    cv::Mat seg_three;
-//    std::vector<cv::Mat> s{seg * 255, seg *255, seg * 255};
-//    cv::merge(s, seg_three);
-//    int w = seg.cols;
-//    int h = seg.rows;
-//    std::cout << "det after postprocess: " << pts.size() << std::endl;
-//    for (auto &pt: pts) {
-//        std::vector<cv::Point2i> points;
-//        mat2points(pt, points, w, h, r_w, r_h);
-//        BoxInfo newbox;
-//        newbox.score = 0.0;
-//        newbox.pt1 = points[0];
-//        newbox.pt2 = points[1];
-//        boxes.push_back(newbox);
-////        std::cout << "x1: " << points[0] << ", x2: " << points[1] << std::endl;
-////        cv::rectangle(seg_three, points[0], points[1], cv::Scalar(0, 0, 255), 2, cv::LINE_4);
-//    }
-//
-////    std::cout << seg << std::endl;
-//    cv::imshow("rs", seg_three);
-////    std::cout << seg;
-//}
 
 
 

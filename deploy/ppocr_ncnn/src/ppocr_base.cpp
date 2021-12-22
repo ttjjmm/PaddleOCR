@@ -2,7 +2,7 @@
 // Created by ubuntu on 2021/12/20.
 //
 
-#include "include/ppocr.h"
+#include "include/ppocr_base.h"
 
 
 PPOCRBase::PPOCRBase(const char *param, const char *bin) {
