@@ -1,6 +1,6 @@
 #include <iostream>
 #include "include/ppocr_det.h"
-#include "ppocr_cls.h"
+#include "include/ppocr_cls.h"
 
 //using namespace cv;
 

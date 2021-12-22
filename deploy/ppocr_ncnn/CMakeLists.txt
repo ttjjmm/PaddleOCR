@@ -42,8 +42,8 @@ include_directories(
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-add_executable(ppocr main.cpp src/ppocr_det.cpp include/ppocr_det.h ppocr_cls.cpp
-        ppocr_cls.h ppocr_rec.cpp ppocr_rec.h ppocr.cpp ppocr.h include/clipper.h include/db_postprocess.h src/db_postprecess.cpp)
+add_executable(ppocr main.cpp src/ppocr_det.cpp include/ppocr_det.h src/ppocr_cls.cpp
+        include/ppocr_cls.h ppocr_rec.cpp ppocr_rec.h ppocr.cpp ppocr.h include/clipper.h include/db_postprocess.h src/db_postprecess.cpp)
 
 target_link_libraries(
         ppocr

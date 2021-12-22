@@ -2,7 +2,7 @@
 // Created by ubuntu on 2021/12/20.
 //
 
-#include "ppocr_cls.h"
+#include "include/ppocr_cls.h"
 #include "benchmark.h"
 
 OCRTextCls::OCRTextCls(const char *param, const char *bin){
