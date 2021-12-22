@@ -9,6 +9,14 @@
 #include <opencv2/opencv.hpp>
 #include "include/clipper.cpp"
 
+
+typedef struct BoxInfo{
+    cv::Point pt1;
+    cv::Point pt2;
+    float score;
+}BoxInfo;
+
+
 class DBPostProcess {
 
 public:
@@ -17,6 +25,7 @@ public:
     float box_score_fast(const cv::Mat& bitmap, const cv::Mat& boxPts);
     cv::Mat get_min_box(const std::vector<cv::Point>& points, float& ssid);
     void mat2points(const cv::Mat& src, std::vector<cv::Point2i>& pt_vec, const int& w, const int& h, const float& ratio_w, const float& ratio_h);
+    void box_from_bitmap(const cv::Mat& src, std::vector<BoxInfo>& boxes, const float& thresh, const float& r_w, const float& r_h);
 
 private:
     static void get_contour_area(const cv::Mat& box, float unclip_ratio, float& distance);
