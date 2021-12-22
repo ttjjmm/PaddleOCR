@@ -45,7 +45,6 @@ class DBPostProcess(object):
         num_contours = min(len(contours), self.max_candidates)
 
         boxes = []
-        boxes_org = []
         scores = []
         for index in range(num_contours):
             contour = contours[index]
@@ -65,14 +64,13 @@ class DBPostProcess(object):
             if sside < self.min_size + 2:
                 continue
             box = np.array(box)
-            boxes_org.append(box.astype(np.int))
             box[:, 0] = np.clip(
                 np.round(box[:, 0] / width * dest_width), 0, dest_width)
             box[:, 1] = np.clip(
                 np.round(box[:, 1] / height * dest_height), 0, dest_height)
             boxes.append(box.astype(np.int16))
             scores.append(score)
-        return np.array(boxes, dtype=np.int16), scores, boxes_org
+        return np.array(boxes, dtype=np.int16), scores
 
     def unclip(self, box):
         unclip_ratio = self.unclip_ratio
@@ -83,7 +81,8 @@ class DBPostProcess(object):
         expanded = np.array(offset.Execute(distance))
         return expanded
 
-    def get_mini_boxes(self, contour):
+    @staticmethod
+    def get_mini_boxes(contour):
         bounding_box = cv2.minAreaRect(contour)
         points = sorted(list(cv2.boxPoints(bounding_box)), key=lambda x: x[0])
         index_1, index_2, index_3, index_4 = 0, 1, 2, 3
@@ -104,7 +103,8 @@ class DBPostProcess(object):
 
         return box, min(bounding_box[1])
 
-    def box_score_fast(self, bitmap, _box):
+    @staticmethod
+    def box_score_fast(bitmap, _box):
         """
         box_score_fast: use bbox mean score as the mean score
         """
@@ -121,7 +121,8 @@ class DBPostProcess(object):
         cv2.fillPoly(mask, box.reshape(1, -1, 2).astype(np.int32), 1)
         return cv2.mean(bitmap[ymin:ymax + 1, xmin:xmax + 1], mask)[0]
 
-    def box_score_slow(self, bitmap, contour):
+    @staticmethod
+    def box_score_slow(bitmap, contour):
         """
         box_score_slow: use polyon mean score as the mean score
         """
@@ -159,7 +160,6 @@ class DBPostProcess(object):
                     self.dilation_kernel)
             else:
                 mask = segmentation[batch_index]
-            boxes, scores, boxes_org = self.boxes_from_bitmap(pred[batch_index], mask, src_w, src_h)
-            # print(boxes_org)
-            boxes_batch.append({'points': boxes, 'scores': scores, 'boxes_org': boxes_org})
+            boxes, scores = self.boxes_from_bitmap(pred[batch_index], mask, src_w, src_h)
+            boxes_batch.append({'points': boxes, 'scores': scores})
         return boxes_batch

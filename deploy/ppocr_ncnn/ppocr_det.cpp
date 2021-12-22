@@ -1,6 +1,7 @@
 //
 // Created by tjm on 2021/12/18.
 //
+#include <iostream>
 #include <algorithm>
 #include "ppocr_det.h"
 #include "benchmark.h"
@@ -98,37 +99,72 @@ cv::Mat OCRTextDet::resize(const cv::Mat& image, const cv::Size_<int>& outsize) 
 }
 
 
+void OCRTextDet::resize(const cv::Mat &img, cv::Mat &resize_img, float &ratio_w, float &ratio_h) const {
+
+    int w = img.cols;
+    int h = img.rows;
+
+    float ratio = 1.f;
+    int max_wh = w > h ? w: h;
+    if (max_wh > this->max_side_len) {
+        if (h > w) {
+            ratio = float(this->max_side_len) / float(h);
+        } else {
+            ratio = float(this->max_side_len) / float(w);
+        }
+    }
+    int resize_w = int(float(w) * ratio);
+    int resize_h = int(float(h) * ratio);
+    resize_w = std::max(int(round(float(resize_w) / 32) * 32), 32);
+    resize_h = std::max(int(round(float(resize_h) / 32) * 32), 32);
+
+    cv::resize(img, resize_img, cv::Size(resize_w, resize_h));
+    ratio_w = float(resize_w) / float(w);
+    ratio_h = float(ratio_h) / float(h);
+}
+
+
 cv::Mat OCRTextDet::detector(const cv::Mat& image) {
-    ncnn::Mat input, preds_map;
-    cv::Mat dst;
-    dst = preprocess(image, input, false, true);
-    cv::imshow("eee", dst);
+    ncnn::Mat in, preds_map;
+    cv::Mat resize_img;
+    float ratio_w, ratio_h;
+    this->resize(image, resize_img, ratio_w, ratio_h);
+    cv::imshow("eee", resize_img);
+//    resize_img.convertTo(resize_img, CV_32FC3, 1. / 255);
+    in = ncnn::Mat::from_pixels(resize_img.data,
+                                   ncnn::Mat::PIXEL_BGR,
+                                   resize_img.cols,
+                                   resize_img.rows);
+
+    in.substract_mean_normalize(this->mean_vals, this->norm_vals);
+//    dst = preprocess(image, input, false, true);
+
 
     double start = ncnn::get_current_time();
     auto ex = this->net->create_extractor();
 //    ex.set_light_mode(true);
     ex.set_num_threads(4);
-    ex.input("input.1", input);
+    ex.input("input.1", in);
     ex.extract("preds", preds_map);
 
 //    this->decode(heatmap, reg_box, dets, 0.4, 0.6);
     double end = ncnn::get_current_time();
 //    std::cout <<  "Inference cost time: " << end - start << std::endl;
     printf("Cost Time:%7.2f\n", end - start);
-    cv::Mat thresh_map(preds_map.w, preds_map.h, CV_32FC1);
-    memcpy((float *)thresh_map.data, preds_map.data, preds_map.h * preds_map.w * sizeof(float));
+    cv::Mat binary_map(cv::Size(preds_map.w, preds_map.h), CV_32FC1);
+    memcpy((float *)binary_map.data, preds_map.data, preds_map.h * preds_map.w * sizeof(float));
 
-    cv::Mat test;
-    thresh_map.convertTo(test, CV_8UC1, 255);
-    cv::imshow("test", test);
+//    cv::Mat test;
+//    thresh_map.convertTo(test, CV_8UC1, 255);
+//    cv::imshow("test", test);
 
-    this->postprocess(thresh_map, 0.3, 4);
+    this->postprocess(binary_map);
 //    thresh_map.convertTo(thresh_map, CV_8UC1, 255);
 //    cv::imshow("r", thresh_map);
 //    std::cout << thresh_map;
 //    std::cout << preds_map.w << "x" << preds_map.h << "x" << preds_map.c << std::endl;
 //    CenterDet::draw_bboxes(dst, dets);
-    return thresh_map;
+    return binary_map;
 }
 
 
@@ -242,23 +278,8 @@ std::vector<cv::Point> unclip(const cv::Mat& box, const float &unclip_ratio) {
     }
 
     return points;
-//    cv::RotatedRect res;
-//    if (points.empty()) {
-//        res = cv::RotatedRect(cv::Point2f(0, 0), cv::Size2f(1, 1), 0);
-//    } else {
-//        res = cv::minAreaRect(points);
-//    }
-//    return res;
 }
 
-
-template <class T> inline T clamp(T x, T min, T max) {
-    if (x > max)
-        return max;
-    if (x < min)
-        return min;
-    return x;
-}
 
 float box_score_fast(const cv::Mat& bitmap, const cv::Mat& boxPts) {
     int w = bitmap.cols;
@@ -349,11 +370,10 @@ void mat2points(const cv::Mat& src, std::vector<cv::Point2i>& pt_vec, const int&
 
     pt_vec.emplace_back(xmin, ymin);
     pt_vec.emplace_back(xmax, ymax);
-
 }
 
 
-void OCRTextDet::postprocess(const cv::Mat& src, float score_thr, float unclip_ratio){
+void OCRTextDet::postprocess(const cv::Mat& src) {
     cv::Mat seg = src > this->thresh;
     seg.convertTo(seg, CV_8UC1, 255);
 //    cv::Mat dila_ele = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(2, 2));
@@ -374,11 +394,11 @@ void OCRTextDet::postprocess(const cv::Mat& src, float score_thr, float unclip_r
         if (ssid < min_size) continue;
 
         float score = box_score_fast(src, pt);
-        if (score_thr > score) continue;
+        if (this->box_thresh > score) continue;
 
 //        auto box_vec = mat2vec(pt);
 
-        auto x = unclip(pt, unclip_ratio);
+        auto x = unclip(pt, this->unclip_ratio);
 //        std::cout << x.center << std::endl;
         auto z = get_min_box(x, ssid);
 
@@ -389,9 +409,6 @@ void OCRTextDet::postprocess(const cv::Mat& src, float score_thr, float unclip_r
         scores.push_back(score);
     }
 
-//    for(auto &s: scores){
-//        std::cout << s << std::endl;
-//    }
     cv::Mat seg_three;
     std::vector<cv::Mat> s{seg * 255, seg *255, seg * 255};
     cv::merge(s, seg_three);

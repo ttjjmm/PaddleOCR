@@ -30,6 +30,8 @@ class BaseDetector(object):
                                  std=[0.229, 0.224, 0.225])
         ])
 
+    def resize(self, img: np.array) -> np.array:
+        pass
 
     def preprocess(self, img: np.array) -> np.array:
         pass
@@ -52,17 +54,43 @@ class OCRTextDetctor(BaseDetector):
         #     transforms.Normalize(mean=[0.485, 0.456, 0.406],
         #                          std=[0.229, 0.224, 0.225])
         # ])
+        self.mean = [0.485, 0.456, 0.406]
+        self.std = [0.229, 0.224, 0.225]
+        self.limit_side_len = 960
+
+
+    def resize(self, img: np.array) -> np.array:
+        h, w, _ = img.shape
+        if max(h, w) > self.limit_side_len:
+            if h > w:
+                ratio = float(self.limit_side_len) / h
+            else:
+                ratio = float(self.limit_side_len) / w
+        else:
+            ratio = 1.
+        resize_h = int(h * ratio)
+        resize_w = int(w * ratio)
+
+        resize_h = max(int(round(resize_h / 32) * 32), 32)
+        resize_w = max(int(round(resize_w / 32) * 32), 32)
+
+
+        if int(resize_w) <= 0 or int(resize_h) <= 0:
+            return None, (None, None)
+        img = cv2.resize(img, (int(resize_w), int(resize_h)))
+
+        ratio_h = resize_h / float(h)
+        ratio_w = resize_w / float(w)
+        return img, [ratio_h, ratio_w]
 
 
     def inference(self, path):
         raw_image = cv2.imread(path)
         src_h, src_w, _ = raw_image.shape
-        ratio_h  = float(480) / src_h
-        ratio_w = float(480) / src_w
-
+        image, (ratio_h, ratio_w) = self.resize(img=raw_image)
         shape_list = np.array([src_h, src_w, ratio_h, ratio_w])
-
-        image = cv2.resize(raw_image, (480, 480))
+        # plt.imshow(image)
+        # plt.show()
         image = self.transform(image).unsqueeze(0)
 
         image = image.to(self.device)
@@ -78,7 +106,11 @@ class OCRTextDetctor(BaseDetector):
         shape_list = np.expand_dims(shape_list, 0)
         det_bboxes = self.postprocess(pred, shape_list)
         # print(det_bboxes)
+
+
+
         points = det_bboxes[0]['points']
+        print(points)
         points = np.reshape(points, (points.shape[0], -1))[:, [0, 1, 4, 5]]
         for dets in points:
             cv2.rectangle(raw_image, (dets[0], dets[1]), (dets[2], dets[3]), (255, 0, 0), 2, cv2.LINE_4)
@@ -140,8 +172,7 @@ if __name__ == '__main__':
     cfgs = yaml.load(open(file_path, 'rb'), Loader=yaml.Loader)
     # test
     d = OCRTextDetctor(cfgs)
-    d.inference('./samples/00009282.jpg')
-
+    d.inference('./samples/ger_1.jpg')
 
 
 

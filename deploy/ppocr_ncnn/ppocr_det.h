@@ -32,19 +32,32 @@ public:
 private:
     cv::Mat preprocess(const cv::Mat& image, ncnn::Mat& in, bool org_size=false, bool keep_ratio=false);
 //    void decode(const ncnn::Mat& heatmap, const ncnn::Mat& reg_box, std::vector<BoxInfo>& results, float score, float nms) const;
-//
+    void resize(const cv::Mat &img, cv::Mat &resize_img, float &ratio_w, float &ratio_h) const;
 //    static void draw_bboxes(const cv::Mat& image, const std::vector<BoxInfo>& bboxes);
     static cv::Mat resize(const cv::Mat& image, const cv::Size_<int>& outsize);
 //    static void nms(std::vector<BoxInfo>& bboxes, float nms_thr);
-    void postprocess(const cv::Mat& src, float score_thr, float unclip_ratio);
+    void postprocess(const cv::Mat& src);
 
+    int max_side_len = 960;
+    float thresh = 0.3;
+    float box_thresh = 0.5;
+    float unclip_ratio = 1.5;
     cv::Size_<int> in_size = cv::Size(480, 480);
-//    const float mean_vals[3] = {0.f, 0.f, 0.f};
-//    const float norm_vals[3] = {1/255.f, 1/255.f, 1/225.f};
+//    const float mean_vals[3] = {0.485f, 0.456f, 0.406f};
+//    const float norm_vals[3] = {1/0.229f, 1/0.224f, 1/0.225f};
     const float mean_vals[3] = {103.94f, 116.78f, 123.68f};
     const float norm_vals[3] = {0.017f, 0.017f, 0.017f};
-    float thresh = 0.3;
+
 };
+
+
+template <class T> inline T clamp(T x, T min, T max) {
+    if (x > max)
+        return max;
+    if (x < min)
+        return min;
+    return x;
+}
 
 
 
