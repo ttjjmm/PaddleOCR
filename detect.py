@@ -172,7 +172,7 @@ if __name__ == '__main__':
     cfgs = yaml.load(open(file_path, 'rb'), Loader=yaml.Loader)
     # test
     d = OCRTextDetctor(cfgs)
-    d.inference('./samples/ger_1.jpg')
+    d.inference('./samples/00006737.jpg')
 
 
 
