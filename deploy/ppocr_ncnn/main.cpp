@@ -11,7 +11,7 @@ int main() {
     // /home/tjm/Documents/python/pycharmProjects
     // /home/ubuntu/Documents/pycharm/
     cv::Mat img;
-    std::string path2 = "/home/ubuntu/Documents/pycharm/PaddleOCR/samples/11.jpg";
+    std::string path2 = "/home/tjm/Documents/python/pycharmProjects/PaddleOCR/samples/11.jpg";
     img = cv::imread(path2);
     if (img.empty()){
         fprintf(stderr, "cv::imread %s failed!", path2.c_str());
@@ -20,8 +20,8 @@ int main() {
 
 //    ResizeImg(img, resize_img, 960, rat_a, rat_b);
 
-    OCRTextDet det("/home/ubuntu/Documents/pycharm/PaddleOCR/onnx/ncnn/ppocr_det.param",
-                   "/home/ubuntu/Documents/pycharm/PaddleOCR/onnx/ncnn/ppocr_det.bin");
+    OCRTextDet det("/home/tjm/Documents/python/pycharmProjects/PaddleOCR/onnx/ncnn/ppocr_det.param",
+                   "/home/tjm/Documents/python/pycharmProjects/PaddleOCR/onnx/ncnn/ppocr_det.bin");
     auto res = det.detector(img);
 
     for (auto& det_box: res){

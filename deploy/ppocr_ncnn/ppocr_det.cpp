@@ -264,11 +264,10 @@ cv::Mat get_min_box(const std::vector<cv::Point>& points, float& ssid){
     cv::boxPoints(rbox, boxPts);
 
     cv::sortIdx(boxPts.col(0), sort_idx, cv::SORT_EVERY_COLUMN);
-    std::cout << "1. " << boxPts << std::endl;
-    for (auto i = 0; i < 4; ++i){
+
+    for (auto i = 0; i < 4; ++i) {
         boxPts.row(sort_idx.at<int>(i)).copyTo(sorted_boxpts.row(i));
     }
-    std::cout << "2. " << boxPts << std::endl;
 
     cv::Mat new_boxpts = cv::Mat::zeros(cv::Size(2, 4), CV_32FC1);
 
