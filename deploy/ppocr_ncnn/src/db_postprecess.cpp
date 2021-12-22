@@ -7,7 +7,7 @@
 
 std::vector<cv::Point> DBPostProcess::unclip(const cv::Mat& box, const float &unclip_ratio) {
     float distance = 1.0;
-    this->get_contour_area(box, unclip_ratio, distance);
+    DBPostProcess::get_contour_area(box, unclip_ratio, distance);
     ClipperLib::ClipperOffset offset;
     ClipperLib::Path p;
     p << ClipperLib::IntPoint(int(box.at<float>(0, 0)), int(box.at<float>(0, 1)))
@@ -143,7 +143,8 @@ void DBPostProcess::mat2points(const cv::Mat& src,
 
 
 void DBPostProcess::box_from_bitmap(const cv::Mat& src, std::vector<BoxInfo>& boxes, const float& thresh,
-                             const float& r_w, const float& r_h) {
+                                    const float& box_thresh, const float& unclip_ratio,
+                                    const float& r_w, const float& r_h) {
     cv::Mat seg = src > thresh;
     seg.convertTo(seg, CV_8UC1, 255);
 //    cv::Mat dila_ele = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(2, 2));
@@ -163,9 +164,9 @@ void DBPostProcess::box_from_bitmap(const cv::Mat& src, std::vector<BoxInfo>& bo
         if (ssid < min_size) continue;
 
         float score = box_score_fast(src, pt);
-        if (this->box_thresh > score) continue;
+        if (box_thresh > score) continue;
 
-        auto x = unclip(pt, this->unclip_ratio);
+        auto x = unclip(pt, unclip_ratio);
 //        std::cout << x.center << std::endl;
         auto z = get_min_box(x, ssid);
 
