@@ -12,7 +12,7 @@ ROOT = FILE.parents[1]
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cfg', type=str, default=ROOT / 'config/ppocr_det.yaml', help='configuration file path')
+    parser.add_argument('--cfg', type=str, default=ROOT / 'config/ppocr_rec.yaml', help='configuration file path')
     parser.add_argument('--save_path', type=str, default=ROOT / 'onnx', help='onnx file save fold path')
     parser.add_argument('--simplify', action='store_true', default=True, help='onnx model simplify')
     opt = parser.parse_args()
@@ -34,11 +34,14 @@ def export_onnx(args):
     in_h, in_w = global_cfg['image_shape'][1:]
     dummy = torch.autograd.Variable(torch.randn(1, 3, in_h, in_w)).to(device)
 
-    torch.onnx.export(model, dummy, save_onnx_path,
-                      verbose=True,
-                      output_names=['preds'],
-                      keep_initializers_as_inputs=True,
-                      opset_version=11)
+    torch.onnx.export(
+        model, dummy, save_onnx_path,
+        opset_version=10,
+        do_constant_folding=True,
+        keep_initializers_as_inputs=True,
+        verbose=True,
+        output_names=['preds']
+    )
     print('step2. Converted pt to ONNX model: {}'.format(save_onnx_path))
 
     if args.simplify:

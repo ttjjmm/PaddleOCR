@@ -137,7 +137,7 @@ class OCRTextRecognizer(BaseDetector):
 
     def inference(self, path):
         img = cv2.imread(path)
-        img = np.transpose(cv2.resize(img, (320, 32)), (0, 1, 2))
+        img = np.transpose(cv2.resize(img, (256, 32)), (0, 1, 2))
         # img = np.expand_dims(img, axis=0)
         img = self.transform(img).unsqueeze(0).to(self.device)
         # print(img.shape)
@@ -145,6 +145,7 @@ class OCRTextRecognizer(BaseDetector):
         with torch.no_grad():
             pred = self.model(img)
         pred = pred.cpu().numpy()
+
         print(self.postprocess(pred))
 
 
@@ -159,11 +160,11 @@ class PaddleOCR(object):
 
 
 if __name__ == '__main__':
-    file_path = './config/ppocr_det.yaml'
+    file_path = './config/ppocr_rec.yaml'
     cfgs = yaml.load(open(file_path, 'rb'), Loader=yaml.Loader)
     # test
-    d = OCRTextDetctor(cfgs)
-    d.inference('./samples/00006737.jpg')
+    d = OCRTextRecognizer(cfgs)
+    d.inference('./samples/word_1.png')
 
 
 

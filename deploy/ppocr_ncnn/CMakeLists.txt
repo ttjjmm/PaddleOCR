@@ -14,12 +14,12 @@ endif()
 #set(OpenCV_DIR "/usr/local/Cellar/opencv/4.3.0_5/lib/cmake/opencv4")
 find_package(OpenCV REQUIRED)
 
-set(ncnn_DIR "/home/tjm/opt/ncnn/build/install/lib/cmake/ncnn")
+set(ncnn_DIR "/home/ubuntu/opt/ncnn/build/install/lib/cmake/ncnn")
 find_package(ncnn REQUIRED)
 if(NOT TARGET ncnn)
     message(WARNING "ncnn NOT FOUND!  Please set ncnn_DIR environment variable")
 else()
-    message("ncnn FOUND")
+    message("NCNN FOUND")
 endif()
 
 #set(InferenceEngine_DIR "/opt/intel/openvino_2021/deployment_tools/inference_engine/share")
@@ -43,7 +43,7 @@ include_directories(
 )
 
 add_executable(ppocr main.cpp src/ppocr_det.cpp include/ppocr_det.h src/ppocr_cls.cpp
-        include/ppocr_cls.h ppocr_rec.cpp ppocr_rec.h src/ppocr_base.cpp include/ppocr_base.h
+        include/ppocr_cls.h src/ppocr_rec.cpp include/ppocr_rec.h src/ppocr_base.cpp include/ppocr_base.h
         include/clipper.h include/db_postprocess.h src/db_postprecess.cpp)
 
 target_link_libraries(

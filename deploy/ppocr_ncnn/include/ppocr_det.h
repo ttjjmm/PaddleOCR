@@ -38,14 +38,5 @@ private:
 };
 
 
-template <class T> inline T clamp(T x, T min, T max) {
-    if (x > max)
-        return max;
-    if (x < min)
-        return min;
-    return x;
-}
-
-
 
 #endif //PPOCR_PPOCR_DET_H

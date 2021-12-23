@@ -9,37 +9,37 @@ class Im2Seq(nn.Module):
 
     @ staticmethod
     def forward(x):
-        B, C, H, W = x.shape
-        assert H == 1
+        # B, C, H, W = x.shape
+        # assert H == 1
         x = x.squeeze(dim=2)
         # x = x.reshape(B, C, H * W)
         x = x.permute(0, 2, 1)  # (NTC)(batch, width, channels)
         return x
 
 
-class EncoderWithRNN_(nn.Module):
-    def __init__(self, in_channels, hidden_size):
-        super(EncoderWithRNN_, self).__init__()
-        self.out_channels = hidden_size * 2
-        self.rnn1 = nn.LSTM(
-            in_channels,
-            hidden_size,
-            bidirectional=False,
-            num_layers=2,
-            batch_first=True)
-        self.rnn2 = nn.LSTM(
-            in_channels,
-            hidden_size,
-            bidirectional=False,
-            num_layers=2,
-            batch_first=True)
-
-    def forward(self, x):
-        self.rnn1.flatten_parameters()
-        self.rnn2.flatten_parameters()
-        out1, h1 = self.rnn1(x)
-        out2, h2 = self.rnn2(x)
-        return torch.cat([out1, torch.flip(out2, [1])], dim=2)
+# class EncoderWithRNN_(nn.Module):
+#     def __init__(self, in_channels, hidden_size):
+#         super(EncoderWithRNN_, self).__init__()
+#         self.out_channels = hidden_size * 2
+#         self.rnn1 = nn.LSTM(
+#             in_channels,
+#             hidden_size,
+#             bidirectional=False,
+#             num_layers=2,
+#             batch_first=True)
+#         self.rnn2 = nn.LSTM(
+#             in_channels,
+#             hidden_size,
+#             bidirectional=False,
+#             num_layers=2,
+#             batch_first=True)
+#
+#     def forward(self, x):
+#         self.rnn1.flatten_parameters()
+#         self.rnn2.flatten_parameters()
+#         out1, h1 = self.rnn1(x)
+#         out2, h2 = self.rnn2(x)
+#         return torch.cat([out1, torch.flip(out2, [1])], dim=2)
 
 
 class EncoderWithRNN(nn.Module):
