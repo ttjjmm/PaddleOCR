@@ -12,6 +12,8 @@ OCRTextRec::OCRTextRec(const char *param, const char *bin, const char *label_pat
     this->net->load_param(param);
     this->net->load_model(bin);
     this->label_list = OCRTextRec::read_dict(label_path);
+    this->label_list.insert(this->label_list.begin(), "#");
+    this->label_list.emplace_back(" ");
 }
 
 
