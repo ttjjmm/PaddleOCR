@@ -129,7 +129,7 @@ void OCRTextRec::detector(const cv::Mat &image) {
 //    cv::waitKey(0);
     std::cout << resize_img.cols << " x " << resize_img.rows << std::endl;
     in = ncnn::Mat::from_pixels(resize_img.data,
-                                ncnn::Mat::PIXEL_BGR,
+                                ncnn::Mat::PIXEL_RGB,
                                 resize_img.cols,
                                 resize_img.rows);
 
@@ -161,8 +161,8 @@ void OCRTextRec::detector(const cv::Mat &image) {
         maxValue = -1000.f;
 
         maxIndex = int(argmax(outputData.begin() + i * preds_map.w,
-                              outputData.begin()+i*preds_map.w+preds_map.w));
-        maxValue = float(*std::max_element(outputData.begin()+i*preds_map.w, outputData.begin()+i*preds_map.w+preds_map.w));// / partition;
+                              outputData.begin() + i * preds_map.w + preds_map.w));
+        maxValue = float(*std::max_element(outputData.begin() + i * preds_map.w, outputData.begin() + i * preds_map.w + preds_map.w));// / partition;
 //        std::cout << preds_map.w << std::endl;
 
 //        if (maxIndex > 0 && maxIndex < keySize && (!(i > 0 && maxIndex == lastIndex))) {
