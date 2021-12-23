@@ -142,8 +142,8 @@ void OCRTextRec::detector(const cv::Mat &image) {
     auto ex = this->net->create_extractor();
 //    ex.set_light_mode(true);
     ex.set_num_threads(4);
-    ex.input("input", in);
-    ex.extract("out", preds_map);
+    ex.input("input.1", in);
+    ex.extract("preds", preds_map);
 
     double end = ncnn::get_current_time();
     printf("Cost Time:%7.2f\n", end - start);

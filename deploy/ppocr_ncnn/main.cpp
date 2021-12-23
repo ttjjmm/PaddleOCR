@@ -21,8 +21,8 @@ int main() {
 
 //    ResizeImg(img, resize_img, 960, rat_a, rat_b);
 
-    OCRTextRec det("/home/ubuntu/Documents/pycharm/PaddleOCR/onnx/ncnn/rec-sim-op.param",
-                   "/home/ubuntu/Documents/pycharm/PaddleOCR/onnx/ncnn/rec-sim-op.bin",
+    OCRTextRec det("/home/ubuntu/Documents/pycharm/PaddleOCR/onnx/ncnn/ppocr_rec.param",
+                   "/home/ubuntu/Documents/pycharm/PaddleOCR/onnx/ncnn/ppocr_rec.bin",
                    "/home/ubuntu/Documents/pycharm/PaddleOCR/utils/paddleocr_keys.txt");
     det.detector(img);
 
