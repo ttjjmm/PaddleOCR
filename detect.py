@@ -99,14 +99,24 @@ class OCRTextDetctor(BaseDetector):
 
         shape_list = np.expand_dims(shape_list, 0)
         det_bboxes = self.postprocess(pred, shape_list)
-        # print(det_bboxes)
+        print(det_bboxes)
         points = det_bboxes[0]['points']
-
         points = np.reshape(points, (points.shape[0], -1))[:, [0, 1, 4, 5]]
+
+        cutoff_imgs = list()
+        show_img = raw_image.copy()
         for dets in points:
-            cv2.rectangle(raw_image, (dets[0], dets[1]), (dets[2], dets[3]), (255, 0, 0), 2, cv2.LINE_4)
-        plt.imshow(raw_image)
+            cv2.rectangle(show_img, (dets[0], dets[1]), (dets[2], dets[3]), (255, 0, 0), 2, cv2.LINE_4)
+            cutoff_imgs.append(raw_image[dets[1]: dets[3], dets[0]: dets[2], :].copy())
+        plt.imshow(show_img)
         plt.show()
+        # print(cutoff_imgs)
+        # plt.imshow(cutoff_imgs[0])
+        # plt.show()
+        return cutoff_imgs
+
+
+
 
 
 
@@ -136,7 +146,10 @@ class OCRTextRecognizer(BaseDetector):
 
 
     def inference(self, path):
-        img = cv2.imread(path)
+        if isinstance(path, str):
+            img = cv2.imread(path)
+        else:
+            img = path
         img = np.transpose(cv2.resize(img, (256, 32)), (0, 1, 2))
         # img = np.expand_dims(img, axis=0)
         img = self.transform(img).unsqueeze(0).to(self.device)
@@ -160,11 +173,20 @@ class PaddleOCR(object):
 
 
 if __name__ == '__main__':
-    file_path = './config/ppocr_rec.yaml'
-    cfgs = yaml.load(open(file_path, 'rb'), Loader=yaml.Loader)
+    file_path_det = './config/ppocr_det.yaml'
+    cfgs_det = yaml.load(open(file_path_det, 'rb'), Loader=yaml.Loader)
+    file_path_rec = './config/ppocr_rec.yaml'
+    cfgs_rec = yaml.load(open(file_path_rec, 'rb'), Loader=yaml.Loader)
     # test
-    d = OCRTextRecognizer(cfgs)
-    d.inference('./samples/word_1.png')
+    det = OCRTextDetctor(cfgs_det)
+    rec = OCRTextRecognizer(cfgs_rec)
+    img_list = det.inference('./samples/ship2.jpeg')
+
+    plt.imshow(img_list[0])
+    plt.show()
+
+    rec.inference('./samples/TestA_000201.jpg')
+
 
 
 
