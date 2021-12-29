@@ -154,7 +154,6 @@ class BasicBlock(nn.Module):
 class ResNet(nn.Module):
     def __init__(self, in_channels=3, layers=50, **kwargs):
         super(ResNet, self).__init__()
-
         self.layers = layers
         supported_layers = [18, 34, 50, 101, 152, 200]
         assert layers in supported_layers, \
@@ -171,8 +170,10 @@ class ResNet(nn.Module):
             depth = [3, 8, 36, 3]
         elif layers == 200:
             depth = [3, 12, 48, 3]
-        num_channels = [64, 256, 512,
-                        1024] if layers >= 50 else [64, 64, 128, 256]
+        else:
+            raise NotImplementedError
+
+        num_channels = [64, 256, 512, 1024] if layers >= 50 else [64, 64, 128, 256]
         num_filters = [64, 128, 256, 512]
 
         self.conv1_1 = ConvBNLayer(
@@ -195,7 +196,7 @@ class ResNet(nn.Module):
             act='relu')
         self.pool2d_max = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
-        self.block_list = []
+        self.block_list = nn.ModuleList()
         if layers >= 50:
             for block in range(len(depth)):
                 shortcut = False
@@ -212,16 +213,15 @@ class ResNet(nn.Module):
                         stride = (2, 1)
                     else:
                         stride = (1, 1)
-                    bottleneck_block = self.add_sublayer(
-                        'bb_%d_%d' % (block, i),
-                        BottleneckBlock(
-                            in_channels=num_channels[block]
-                            if i == 0 else num_filters[block] * 4,
-                            out_channels=num_filters[block],
-                            stride=stride,
-                            shortcut=shortcut,
-                            if_first=block == i == 0,
-                            name=conv_name))
+                    bottleneck_block = BottleneckBlock(
+                        in_channels=num_channels[block]
+                        if i == 0 else num_filters[block] * 4,
+                        out_channels=num_filters[block],
+                        stride=stride,
+                        shortcut=shortcut,
+                        if_first=block == i == 0,
+                        name=conv_name
+                    )
                     shortcut = True
                     self.block_list.append(bottleneck_block)
                 self.out_channels = num_filters[block] * 4
@@ -234,17 +234,15 @@ class ResNet(nn.Module):
                         stride = (2, 1)
                     else:
                         stride = (1, 1)
-
-                    basic_block = self.add_sublayer(
-                        'bb_%d_%d' % (block, i),
-                        BasicBlock(
-                            in_channels=num_channels[block]
-                            if i == 0 else num_filters[block],
-                            out_channels=num_filters[block],
-                            stride=stride,
-                            shortcut=shortcut,
-                            if_first=block == i == 0,
-                            name=conv_name))
+                    basic_block = BasicBlock(
+                        in_channels=num_channels[block]
+                        if i == 0 else num_filters[block],
+                        out_channels=num_filters[block],
+                        stride=stride,
+                        shortcut=shortcut,
+                        if_first=block == i == 0,
+                        name=conv_name
+                    )
                     shortcut = True
                     self.block_list.append(basic_block)
                 self.out_channels = num_filters[block]
@@ -262,9 +260,8 @@ class ResNet(nn.Module):
 
 
 
-
-
 if __name__ == '__main__':
-    pass
+    m = ResNet()
+    print(m)
 
 
