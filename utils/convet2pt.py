@@ -19,6 +19,10 @@ def ocr_converter(yaml_path, src_weight, dst_weight=None):
         with fluid.dygraph.guard():
             para_state_dict, opti_state_dict = fluid.load_dygraph(src_weight)
 
+        # for k, v in para_state_dict.items():
+        #     print(k, v.shape)
+        # print(len(model.state_dict()))
+
         for k, v in model.state_dict().items():
             if k.endswith('num_batches_tracked'):
                 continue
@@ -34,11 +38,10 @@ def ocr_converter(yaml_path, src_weight, dst_weight=None):
                 print('Redundance: {}'.format(k))
                 raise RuntimeError
 
-            if ppname.endswith('fc.weight'):
-                new_state_dict[k] = torch.FloatTensor(para_state_dict[ppname]).T
+            if ppname.endswith('fc1.weight') or ppname.endswith('fc2.weight'):
+                new_state_dict[k] = torch.FloatTensor(para_state_dict['student2_model.' + ppname]).T
             else:
-                new_state_dict[k] = torch.FloatTensor(para_state_dict[ppname])
-
+                new_state_dict[k] = torch.FloatTensor(para_state_dict['student2_model.'+ ppname])
             print(k, v.shape)
 
         model.load_state_dict(new_state_dict, strict=True)
@@ -58,5 +61,5 @@ def ocr_converter(yaml_path, src_weight, dst_weight=None):
 
 
 if __name__ == '__main__':
-    ocr_converter('/home/ubuntu/Documents/pycharm/PaddleOCR/config/ppocr_rec.yaml',
-                  '/home/ubuntu/Documents/pycharm/PaddleOCR/weights/ch_ppocr_mobile_v2.0_rec_pre/best_accuracy.pdparams')
+    ocr_converter('/home/ubuntu/Documents/pycharm/PaddleOCR/config/ppocr_det.yaml',
+                  '/home/ubuntu/Documents/pycharm/PaddleOCR/weights/ch_PP-OCRv2_det_distill_train/ch_PP-OCRv2_det_distill_train/best_accuracy.pdparams')

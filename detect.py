@@ -116,10 +116,6 @@ class OCRTextDetctor(BaseDetector):
         return cutoff_imgs
 
 
-
-
-
-
 class OCRTextClassifier(BaseDetector):
     def __init__(self, cfg):
         super(OCRTextClassifier, self).__init__(cfg)
@@ -139,6 +135,7 @@ class OCRTextClassifier(BaseDetector):
         print(label_idx)
 
 
+
 class OCRTextRecognizer(BaseDetector):
     def __init__(self, cfg):
         super(OCRTextRecognizer, self).__init__(cfg)
@@ -150,7 +147,10 @@ class OCRTextRecognizer(BaseDetector):
             img = cv2.imread(path)
         else:
             img = path
-        img = np.transpose(cv2.resize(img, (256, 32)), (0, 1, 2))
+        img = cv2.resize(img, (160, 32), cv2.INTER_CUBIC)
+        plt.imshow(img)
+        plt.show()
+        img = np.transpose(img, (0, 1, 2))
         # img = np.expand_dims(img, axis=0)
         img = self.transform(img).unsqueeze(0).to(self.device)
         # print(img.shape)
@@ -159,7 +159,9 @@ class OCRTextRecognizer(BaseDetector):
             pred = self.model(img)
         pred = pred.cpu().numpy()
 
-        print(self.postprocess(pred))
+        chars = self.postprocess(pred)
+        return chars
+
 
 
 class PaddleOCR(object):
@@ -171,22 +173,28 @@ class PaddleOCR(object):
         pass
 
 
+# def visualization(self, bboxs, chars):
+
 
 if __name__ == '__main__':
     file_path_det = './config/ppocr_det.yaml'
     cfgs_det = yaml.load(open(file_path_det, 'rb'), Loader=yaml.Loader)
-    file_path_rec = './config/ppocr_rec.yaml'
+    file_path_rec = './config/ppocr_v2_rec.yaml'
     cfgs_rec = yaml.load(open(file_path_rec, 'rb'), Loader=yaml.Loader)
     # test
     det = OCRTextDetctor(cfgs_det)
     rec = OCRTextRecognizer(cfgs_rec)
-    img_list = det.inference('./samples/ship2.jpeg')
+
+
+
+
+    img_list = det.inference('./samples/Picture3.png')
 
     plt.imshow(img_list[0])
     plt.show()
 
-    rec.inference('./samples/TestA_000201.jpg')
-
+    c_list = rec.inference(img_list[0])
+    print(c_list[0][0])
 
 
 
