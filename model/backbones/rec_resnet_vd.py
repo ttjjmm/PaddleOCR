@@ -60,8 +60,7 @@ class BottleneckBlock(nn.Module):
                  out_channels,
                  stride,
                  shortcut=True,
-                 if_first=False,
-                 name=None):
+                 if_first=False):
         super(BottleneckBlock, self).__init__()
 
         self.conv0 = ConvBNLayer(
@@ -112,8 +111,7 @@ class BasicBlock(nn.Module):
                  out_channels,
                  stride,
                  shortcut=True,
-                 if_first=False,
-                 name=None):
+                 if_first=False):
         super(BasicBlock, self).__init__()
         self.stride = stride
         self.conv0 = ConvBNLayer(
@@ -201,14 +199,6 @@ class ResNet(nn.Module):
             for block in range(len(depth)):
                 shortcut = False
                 for i in range(depth[block]):
-                    if layers in [101, 152, 200] and block == 2:
-                        if i == 0:
-                            conv_name = "res" + str(block + 2) + "a"
-                        else:
-                            conv_name = "res" + str(block + 2) + "b" + str(i)
-                    else:
-                        conv_name = "res" + str(block + 2) + chr(97 + i)
-
                     if i == 0 and block != 0:
                         stride = (2, 1)
                     else:
@@ -219,8 +209,7 @@ class ResNet(nn.Module):
                         out_channels=num_filters[block],
                         stride=stride,
                         shortcut=shortcut,
-                        if_first=block == i == 0,
-                        name=conv_name
+                        if_first=block == i == 0
                     )
                     shortcut = True
                     self.block_list.append(bottleneck_block)
@@ -229,7 +218,6 @@ class ResNet(nn.Module):
             for block in range(len(depth)):
                 shortcut = False
                 for i in range(depth[block]):
-                    conv_name = "res" + str(block + 2) + chr(97 + i)
                     if i == 0 and block != 0:
                         stride = (2, 1)
                     else:
@@ -240,12 +228,12 @@ class ResNet(nn.Module):
                         out_channels=num_filters[block],
                         stride=stride,
                         shortcut=shortcut,
-                        if_first=block == i == 0,
-                        name=conv_name
+                        if_first=block == i == 0
                     )
                     shortcut = True
                     self.block_list.append(basic_block)
                 self.out_channels = num_filters[block]
+
         self.out_pool = nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
 
     def forward(self, inputs):
@@ -263,5 +251,7 @@ class ResNet(nn.Module):
 if __name__ == '__main__':
     m = ResNet()
     print(m)
-
+    inp = torch.randn((4, 3, 320, 320))
+    out = m(inp)
+    print(out.shape)
 
